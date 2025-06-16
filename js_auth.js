@@ -27,7 +27,7 @@ async function handleLogin() {
         const { error } = await supabase.auth.signInWithOtp({
             email: email,
             options: {
-                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-1/", // Your specified redirect link
+                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-/", // Your specified redirect link
             },
         });
         
