@@ -1,125 +1,153 @@
 // js_profiles.js
-const profileForm = document.getElementById('profile-form');
-const saveProfileButton = document.getElementById('save-profile-button');
-const profileMessage = document.getElementById('profile-message');
 
-// Form inputs
-const customerNameInput = document.getElementById('customer-name');
-const mobileNumberInput = document.getElementById('mobile-number');
-const streetNameInput = document.getElementById('street-name');
-const nearbyLandmarkInput = document.getElementById('nearby-landmark');
-const districtInput = document.getElementById('district');
-const stateInput = document.getElementById('state');
-const pincodeInput = document.getElementById('pincode');
+document.addEventListener('DOMContentLoaded', async () => {
+    const profileDetailsView = document.getElementById('profile-details-view');
+    const profileEditForm = document.getElementById('profile-edit-form');
+    const profileToggleButton = document.getElementById('profile-toggle-edit-button');
+    const saveProfileChangesButton = document.getElementById('save-profile-changes-button');
 
-async function saveProfile() {
-    const user = window.currentUser;
-    if (!user) {
-        profileMessage.textContent = 'You must be logged in.';
-        profileMessage.className = 'message error';
-        return;
-    }
+    // Display elements
+    const displayName = document.getElementById('profile-display-name');
+    const displayMobile = document.getElementById('profile-display-mobile');
+    const displayStreet = document.getElementById('profile-display-street');
+    const displayLandmark = document.getElementById('profile-display-landmark');
+    const displayDistrict = document.getElementById('profile-display-district');
+    const displayState = document.getElementById('profile-display-state');
+    const displayPincode = document.getElementById('profile-display-pincode');
 
-    const profileData = {
-        id: user.id,
-        user_type: 'Customer',
-        full_name: customerNameInput.value.trim(), // Assuming 'full_name' column exists or needs to be added
-        mobile_number: mobileNumberInput.value.trim(),
-        street_name: streetNameInput.value.trim(),
-        nearby_landmark: nearbyLandmarkInput.value.trim(), // Assuming 'nearby_landmark' column
-        district: districtInput.value.trim(),
-        state: stateInput.value.trim(),
-        pincode: pincodeInput.value.trim(),
-        updated_at: new Date().toISOString()
-    };
-    
-    // Simple validation
-    if (!profileData.full_name || !profileData.mobile_number || !profileData.pincode) {
-        profileMessage.textContent = 'Name, Mobile, and Pincode are required.';
-        profileMessage.className = 'message error';
-        return;
-    }
+    // Edit form elements
+    const editName = document.getElementById('edit-customer-name');
+    const editMobile = document.getElementById('edit-mobile-number');
+    const editStreet = document.getElementById('edit-street-name');
+    const editLandmark = document.getElementById('edit-nearby-landmark');
+    const editDistrict = document.getElementById('edit-district');
+    const editState = document.getElementById('edit-state');
+    const editPincode = document.getElementById('edit-pincode');
 
-    showLoader();
-    saveProfileButton.disabled = true;
+    // Function to load and display profile data
+    async function loadProfileData() {
+        showLoader();
+        try {
+            const user = window.currentUser;
+            if (!user) {
+                console.error('User not logged in, cannot load profile.');
+                return;
+            }
+            const profile = await window.fetchProfile(user.id); // Assuming fetchProfile is in js_main or js_supabase
 
-    try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .upsert(profileData, { onConflict: 'id' })
-            .select()
-            .single();
+            if (profile) {
+                window.userProfile = profile; // Update global userProfile
+                displayName.textContent = profile.customer_name || 'N/A';
+                displayMobile.textContent = profile.mobile_number || 'N/A';
+                displayStreet.textContent = profile.street_name || 'N/A';
+                displayLandmark.textContent = profile.nearby_landmark || 'N/A';
+                displayDistrict.textContent = profile.district || 'N/A';
+                displayState.textContent = profile.state || 'N/A';
+                displayPincode.textContent = profile.pincode || 'N/A';
 
-        if (error) throw error;
-        
-        localStorage.setItem('userProfile', JSON.stringify(data));
-        window.userProfile = data;
-        
-        displayProfileSummary(data);
-        navigateToPage('lets-go-page');
+                // Populate edit form fields
+                editName.value = profile.customer_name || '';
+                editMobile.value = profile.mobile_number || '';
+                editStreet.value = profile.street_name || '';
+                editLandmark.value = profile.nearby_landmark || '';
+                editDistrict.value = profile.district || '';
+                editState.value = profile.state || '';
+                editPincode.value = profile.pincode || '';
 
-    } catch (error) {
-        console.error('Error saving profile:', error);
-        profileMessage.textContent = `Error: ${error.message}`;
-        profileMessage.className = 'message error';
-    } finally {
-        hideLoader();
-        saveProfileButton.disabled = false;
-    }
-}
-
-async function fetchProfile(userId) {
-    try {
-        const { data, error, status } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-        if (error && status !== 406) {
-            throw error;
+                // Show view, hide form
+                profileDetailsView.classList.remove('hidden');
+                profileEditForm.classList.add('hidden');
+                profileToggleButton.textContent = 'Edit Profile';
+            } else {
+                console.warn('Profile not found for user.');
+                profileDetailsView.innerHTML = '<p>No profile data found. Please set up your profile.</p>';
+                profileEditForm.classList.remove('hidden'); // Prompt to set up
+                profileToggleButton.textContent = 'Save Profile'; // Adjust button text
+            }
+        } catch (error) {
+            console.error('Error loading profile data:', error.message);
+            profileDetailsView.innerHTML = '<p>Error loading profile data.</p>';
+        } finally {
+            hideLoader();
         }
-        
-        if (data) {
-            localStorage.setItem('userProfile', JSON.stringify(data));
-            window.userProfile = data;
-            return data;
+    }
+
+    // Toggle between view and edit modes
+    profileToggleButton.addEventListener('click', () => {
+        if (profileDetailsView.classList.contains('hidden')) {
+            // Currently in edit mode, switch to view mode (cancel edit)
+            profileDetailsView.classList.remove('hidden');
+            profileEditForm.classList.add('hidden');
+            profileToggleButton.textContent = 'Edit Profile';
+            // Reload data to discard unsaved changes
+            loadProfileData();
+        } else {
+            // Currently in view mode, switch to edit mode
+            profileDetailsView.classList.add('hidden');
+            profileEditForm.classList.remove('hidden');
+            profileToggleButton.textContent = 'Cancel Edit';
         }
-        return null;
-    } catch (error) {
-        console.error('Error fetching profile:', error.message);
-        return null;
-    }
-}
-
-function displayProfileSummary(profile) {
-    const summaryDiv = document.getElementById('user-details-summary');
-    if (profile && summaryDiv) {
-        summaryDiv.innerHTML = `
-            <p><strong>Name:</strong> ${profile.full_name || ''}</p>
-            <p><strong>Mobile:</strong> ${profile.mobile_number || ''}</p>
-            <p><strong>Address:</strong> ${profile.street_name || ''}, ${profile.district || ''}</p>
-            <p><strong>Pincode:</strong> ${profile.pincode || ''}</p>
-        `;
-    }
-}
-
-function populateProfileForEditing(profile) {
-    if (profile) {
-        customerNameInput.value = profile.full_name || '';
-        mobileNumberInput.value = profile.mobile_number || '';
-        streetNameInput.value = profile.street_name || '';
-        nearbyLandmarkInput.value = profile.nearby_landmark || '';
-        districtInput.value = profile.district || '';
-        stateInput.value = profile.state || '';
-        pincodeInput.value = profile.pincode || '';
-    }
-}
-
-
-if (profileForm) {
-    profileForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveProfile();
     });
-}
+
+    // Save profile changes
+    saveProfileChangesButton.addEventListener('click', async () => {
+        showLoader();
+        try {
+            const user = window.currentUser;
+            if (!user) {
+                alert('You must be logged in to update your profile.');
+                return;
+            }
+
+            const updates = {
+                customer_name: editName.value,
+                mobile_number: editMobile.value,
+                street_name: editStreet.value,
+                nearby_landmark: editLandmark.value,
+                district: editDistrict.value,
+                state: editState.value,
+                pincode: editPincode.value,
+            };
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', user.id)
+                .select() // Return updated data
+                .single();
+
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    alert('Mobile number or email already exists. Please use a different one.');
+                } else {
+                    throw error;
+                }
+            }
+
+            if (data) {
+                window.userProfile = data; // Update global profile
+                alert('Profile updated successfully!');
+                loadProfileData(); // Reload to show updated data and switch back to view mode
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error.message);
+            alert('Failed to update profile: ' + error.message);
+        } finally {
+            hideLoader();
+        }
+    });
+
+    // Attach event listener to the Profile button in the bottom navigation
+    const profileNavButton = document.querySelector('button[data-page="profile-page-content"]');
+    if (profileNavButton) {
+        profileNavButton.addEventListener('click', () => {
+            navigateToPage('main-app-view', 'profile-page-content');
+            loadProfileData(); // Load data when profile page is active
+        });
+    }
+
+    // Initial load if profile page is the default or becomes active
+    if (document.getElementById('profile-page-content').classList.contains('active')) {
+        loadProfileData();
+    }
+});
