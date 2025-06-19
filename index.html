@@ -1,158 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>StreetR</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>StreetR</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-    <div id="app">
-        <div id="loading-modal" class="modal-overlay hidden">
-            <div class="loader-container">
-                <div class="spinning-circle">
-                    <img src="https://assets.onecompiler.app/42q5e2pr5/43m4t5ddk/1000130216.png" alt="Logo" class="loader-logo">
-                </div>
-                <div class="loader-text">
-                    <span class="text-orange">Street</span><span class="text-white">R</span>
-                </div>
-            </div>
-        </div>
+<div id="app">
+<div id="loading-modal" class="modal-overlay hidden">
+<div class="loader-container">
+<div class="spinning-circle">
+<img src="assets/app-logo.png" alt="Logo" class="loader-logo">
+</div>
+<div class="loader-text">
+<span class="text-orange">Street</span><span class="text-white">R</span>
+</div>
+</div>
+</div>
+<div id="notification-popup-1" class="popup-notification hidden">
+<button class="close-popup-btn">&times;</button>
+<img src="assets/promo-1.png" alt="Promo 1">
+</div>
+<div id="notification-popup-2" class="popup-notification hidden">
+<button class="close-popup-btn">&times;</button>
+<img src="assets/promo-2.png" alt="Promo 2">
+</div>
+<header id="app-header" class="app-header" style="display: none;">
+<div class="header-left">
+<h1 class="header-title">StreetR</h1>
+</div>
+<div class="header-right">
+<button id="favorites-button" class="icon-button">❤️</button>
+<button id="search-button" class="icon-button">🔍</button>
+</div>
+</header>
 
-        <div id="notification-popup-1" class="popup-notification hidden">
-            <button class="close-popup-btn">&times;</button>
-            <img src="https://assets.onecompiler.app/42q5e2pr5/43n479qnc/1000132301.jpg" alt="Promo 1">
-        </div>
-        <div id="notification-popup-2" class="popup-notification hidden">
-            <button class="close-popup-btn">&times;</button>
-            <img src="assets/promo-2.png" alt="Promo 2">
-        </div>
+<main id="page-container">
+<div id="login-page" class="page active">
+<div class="page-content centered-content">
+<img src="assets/app-logo.png" alt="App Logo" class="app-icon-large">
+<h2>Welcome to StreetR!</h2>
+<p>Your Favorite Foods, Snacks & Juices – Delivered with a Smile!</p>
+<input type="email" id="login-email" placeholder="Enter your email"
+autocomplete="email">
+<div class="terms-container">
+<input type="checkbox" id="terms-conditions">
+<label for="terms-conditions">I agree to the <a href="#" target="_blank">Terms &
+Conditions</a></label>
+</div>
+<button id="login-button">Get Magic Link</button>
+<p id="login-message" class="message"></p>
+</div>
+</div>
+<div id="profile-setup-page" class="page">
+<div class="page-header">Personal Details</div>
+<div class="page-content">
+<form id="profile-form">
+<label for="customer-name">Full Name:</label>
+<input type="text" id="customer-name" required>
+<label for="mobile-number">Mobile Number:</label>
+<input type="tel" id="mobile-number" required pattern="[0-9]{10}">
+<label for="street-name">Street Name / House No:</label>
+<input type="text" id="street-name" required>
+<label for="nearby-landmark">Nearby Landmark:</label>
+<input type="text" id="nearby-landmark" required>
+<label for="district">District:</label>
+<input type="text" id="district" required>
+<label for="state">State:</label>
+<input type="text" id="state" required>
+<label for="pincode">Pincode:</label>
+<input type="text" id="pincode" required pattern="[0-9]{6}">
+<button type="submit" id="save-profile-button">Save Details</button>
+</form>
+<p id="profile-message" class="message"></p>
+</div>
+</div>
+<div id="lets-go-page" class="page">
+<div class="page-content centered-content">
+<h2>Details Saved!</h2>
+<div id="user-details-summary"></div>
+<button id="edit-details-button">Modify Details</button>
+<button id="lets-go-button">Let's Go!</button>
+</div>
+</div>
+<div id="main-app-view" class="page">
+<div id="home-page-content" class="tab-content active">
+<section class="homepage-section">
+<h3>Popular Items</h3>
+<div id="popular-items-container" class="item-grid"></div>
+</section>
+<section class="homepage-section">
+<h3>All Available Items</h3>
+<div id="all-items-container" class="item-grid"></div>
+</section>
+</div>
+<div id="orders-page-content" class="tab-content">
+<h3>Your Orders</h3>
+<div id="orders-list"></div>
+</div>
+<div id="cart-page-content" class="tab-content">
+<h3>Your Cart</h3>
+<div id="cart-items-container"></div>
+<div id="cart-summary" class="hidden">
+<p>Total: <span id="cart-total-price"></span></p>
+<button id="order-now-button">Order Now</button>
+</div>
+</div>
+<div id="map-page-content" class="tab-content">
+<div id="map-controls">
+<input type="text" id="map-search-bar" placeholder="Search for shops...">
+<div id="map-categories" class="category-slider"></div>
+</div>
+<div id="map-container"></div>
+</div>
 
-        <header id="app-header" class="app-header" style="display: none;">
-             <div class="header-left">
-                <h1 class="header-title">StreetR</h1>
-             </div>
-             <div class="header-right">
-                <button id="favorites-button" class="icon-button">❤️</button>
-                <button id="search-button" class="icon-button">🔍</button>
-             </div>
-        </header>
+<div id="search-page-content" class="tab-content">
+<div class="search-bar-container">
+<input type="text" id="search-input" placeholder="Search for food or shops...">
+<button id="clear-search-button" class="icon-button">✖️</button>
+</div>
+<div id="search-suggestions" class="category-slider">
+<button class="search-tag">Pizza</button>
+<button class="search-tag">Biriyani</button>
+<button class="search-tag">Ice Cream</button>
+<button class="search-tag">street food</button>
+<button class="search-tag">Bakery</button>
+</div>
+<div class="filter-tabs">
+<button id="food-items-tab" class="tab-button active">Food Items</button>
+<button id="shops-tab" class="tab-button">Shops</button>
+</div>
+<div id="search-results-container">
+<div id="food-results" class="item-grid active"></div>
+<div id="shop-results" class="shop-grid"></div>
+<div id="empty-state" class="centered-content hidden">
+<img src="assets/no-results.png" alt="No results" class="empty-state-image">
+<p id="empty-state-text">No results found for '[query]'. Try another keyword!</p>
+</div>
+</div>
+</div>
 
-        <main id="page-container">
-            <div id="login-page" class="page active">
-                <div class="page-content centered-content">
-                    <img src="assets/app-logo.png" alt="App Logo" class="app-icon-large">
-                    <h2>Welcome to StreetR!</h2>
-                    <p>Your Favorite Foods, Snacks & Juices – Delivered with a Smile!</p>
-                    <input type="email" id="login-email" placeholder="Enter your email" autocomplete="email">
-                    <div class="terms-container">
-                        <input type="checkbox" id="terms-conditions">
-                        <label for="terms-conditions">I agree to the <a href="#" target="_blank">Terms & Conditions</a></label>
-                    </div>
-                    <button id="login-button">Get Magic Link</button>
-                    <p id="login-message" class="message"></p>
-                </div>
-            </div>
-
-            <div id="profile-setup-page" class="page">
-                <div class="page-header">Personal Details</div>
-                <div class="page-content">
-                    <form id="profile-form">
-                        <label for="customer-name">Full Name:</label>
-                        <input type="text" id="customer-name" required>
-                        <label for="mobile-number">Mobile Number:</label>
-                        <input type="tel" id="mobile-number" required pattern="[0-9]{10}">
-                        <label for="street-name">Street Name / House No:</label>
-                        <input type="text" id="street-name" required>
-                         <label for="nearby-landmark">Nearby Landmark:</label>
-                        <input type="text" id="nearby-landmark" required>
-                        <label for="district">District:</label>
-                        <input type="text" id="district" required>
-                        <label for="state">State:</label>
-                        <input type="text" id="state" required>
-                        <label for="pincode">Pincode:</label>
-                        <input type="text" id="pincode" required pattern="[0-9]{6}">
-                        <button type="submit" id="save-profile-button">Save Details</button>
-                    </form>
-                    <p id="profile-message" class="message"></p>
-                </div>
-            </div>
-
-            <div id="lets-go-page" class="page">
-                <div class="page-content centered-content">
-                    <h2>Details Saved!</h2>
-                    <div id="user-details-summary"></div>
-                    <button id="edit-details-button">Modify Details</button>
-                    <button id="lets-go-button">Let's Go!</button>
-                </div>
-            </div>
-            
-            <div id="main-app-view" class="page">
-                <div id="home-page-content" class="tab-content active">
-                    <h3>Popular Items</h3>
-                    <div id="popular-items-container" class="item-grid"></div>
-                    <h3>All Available Items</h3>
-                    <div id="all-items-container" class="item-grid"></div>
-                </div>
-                <div id="orders-page-content" class="tab-content">
-                    <h3>Your Orders</h3>
-                    <div id="orders-list"></div>
-                </div>
-                <div id="cart-page-content" class="tab-content">
-                     <h3>Your Cart</h3>
-                     <div id="cart-items-container"></div>
-                     <div id="cart-summary" class="hidden">
-                         <p>Total: <span id="cart-total-price"></span></p>
-                         <button id="order-now-button">Order Now</button>
-                     </div>
-                </div>
-                <div id="map-page-content" class="tab-content">
-                     <div id="map-controls">
-                        <input type="text" id="map-search-bar" placeholder="Search for shops...">
-                        <div id="map-categories" class="category-slider"></div>
-                     </div>
-                     <div id="map-container"></div>
-                </div>
-                <div id="more-page-content" class="tab-content">
-                     <h3>More Categories</h3>
-                     <div class="more-menu-buttons">
-                        <button onclick="window.location.href='moms_kitchen.html'">Mom's Kitchen</button>
-                        <button onclick="window.location.href='Dairy.html'">Dairy</button>
-                        <button onclick="window.location.href='pooja_shop.html'">Pooja Shop</button>
-                     </div>
-                </div>
-                <div id="profile-page-content" class="tab-content">
-                     <h3>Your Profile</h3>
-                     <div id="profile-details-view"></div>
-                     <button id="profile-edit-button">Edit Name & Address</button>
-                     <button id="help-button">Help</button>
-                     <button id="logout-button">Logout</button>
-                </div>
-            </div>
-
-        </main>
-
-        <nav id="bottom-nav" class="bottom-nav" style="display: none;">
-            <button data-page="home-page-content" class="nav-item active">Home</button>
-            <button data-page="orders-page-content" class="nav-item">Orders</button>
-            <button data-page="map-page-content" class="nav-item">Map</button>
-            <button data-page="cart-page-content" class="nav-item">Cart</button>
-            <button data-page="profile-page-content" class="nav-item">Profile</button>
-            <button data-page="more-page-content" class="nav-item">More</button>
-        </nav>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="js_supabase.js"></script>
-    <script src="js_auth.js"></script>
-    <script src="js_profiles.js"></script>
-    <script src="js_home.js"></script>
-    <script src="js_map.js"></script>
-    <script src="js_order.js"></script>
-    <script src="js_add_to_cart.js"></script>
-    <script src="js_notification.js"></script>
-    <script src="js_main.js"></script>
-</body>
+<div id="more-page-content" class="tab-content">
+<h3>More Categories</h3>
+<div class="more-menu-buttons">
+<button onclick="window.location.href='moms_kitchen.html'">Mom's
+Kitchen</button>
+<button onclick="window.location.href='Dairy.html'">Dairy</button>
+<button onclick="window.location.href='pooja_shop.html'">Pooja Shop</button>
+</div>
+</div>
+<div id="profile-page-content" class="tab-content">
+<h3>Your Profile</h3>
+<div id="profile-details-view"></div>
+<button id="profile-edit-button">Edit Name & Address</button>
+<button id="help-button">Help</button>
+<button id="logout-button">Logout</button>
+</div>
+</div>
+</main>
+<nav id="bottom-nav" class="bottom-nav" style="display: none;">
+<button data-page="home-page-content" class="nav-item active">Home</button>
+<button data-page="orders-page-content" class="nav-item">Orders</button>
+<button data-page="map-page-content" class="nav-item">Map</button>
+<button data-page="cart-page-content" class="nav-item">Cart</button>
+<button data-page="profile-page-content" class="nav-item">Profile</button>
+<button data-page="more-page-content" class="nav-item">More</button>
+<button id="qr-scanner-button" class="nav-item">📸</button>
+</nav>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+<script src="js_supabase.js"></script>
+<script src="js_auth.js"></script>
+<script src="js_profiles.js"></script>
+<script src="js_home.js"></script>
+<script src="js_map.js"></script>
+<script src="js_order.js"></script>
+<script src="js_add_to_cart.js"></script>
+<script src="js_notification.js"></script>
+<script src="js_main.js"></script>
+<script src="js_search.js"></script> </body>
 </html>
