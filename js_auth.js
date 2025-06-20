@@ -1,4 +1,4 @@
-// js_auth.js
+//js_auth.js
 const loginEmailInput = document.getElementById('login-email');
 const loginButton = document.getElementById('login-button');
 const termsCheckbox = document.getElementById('terms-conditions');
@@ -17,20 +17,19 @@ async function handleLogin() {
         loginMessage.className = 'message error';
         return;
     }
+
     showLoader();
     loginMessage.textContent = 'Sending magic link...';
     loginMessage.className = 'message';
     loginButton.disabled = true;
 
     try {
-        // *** FIX: Use the exact and full URL to your index.html file ***
         const { error } = await supabase.auth.signInWithOtp({
             email: email,
             options: {
-                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-/index.html" // This is the required change
+                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-/",
             },
         });
-
         if (error) throw error;
         loginMessage.textContent = 'Login link sent! Please check your email to sign in.';
     } catch (error) {
@@ -49,22 +48,9 @@ async function handleLogout() {
     if (error) {
         console.error('Logout error:', error);
         alert('Error logging out: ' + error.message);
-    } else {
-        localStorage.clear();
-        window.currentUser = null;
-        window.userProfile = null;
-        navigateToPage('login-page');
     }
+    // The onAuthStateChange listener in js_main.js will handle the navigation.
     hideLoader();
-}
-
-async function getCurrentUser() {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error) {
-        console.error("Error getting session:", error.message);
-        return null;
-    }
-    return session ? session.user : null;
 }
 
 // Event Listeners
