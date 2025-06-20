@@ -1,11 +1,14 @@
-// js_main.js
+// js/js_main.js
 const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
 const tabContents = document.querySelectorAll('#main-app-view .tab-content');
 const appHeader = document.getElementById('app-header');
 const bottomNav = document.getElementById('bottom-nav');
-const letsGoButton = document.getElementById('lets-go-button');
-const editDetailsButton = document.getElementById('edit-details-button');
+const pageFooter = document.getElementById('page-footer');
+
+// New page buttons
+const searchPageButton = document.getElementById('search-page-button');
+const likesPageButton = document.getElementById('likes-page-button');
 
 window.currentUser = null;
 window.userProfile = null;
@@ -22,43 +25,64 @@ function navigateToPage(pageId, tabContentId = null) {
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId)?.classList.add('active');
 
-    if (pageId === 'main-app-view') {
-        appHeader.style.display = 'flex';
-        bottomNav.style.display = 'flex';
-        
+    const isMainView = pageId === 'main-app-view';
+    appHeader.style.display = isMainView ? 'flex' : 'none';
+    bottomNav.style.display = isMainView ? 'flex' : 'none';
+    
+    // Manage footer visibility (for cart's sticky button)
+    pageFooter.style.display = 'none';
+    pageFooter.querySelector('#cart-footer').classList.add('hidden');
+
+    if (isMainView) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
         
         document.getElementById(activeTabId)?.classList.add('active');
         bottomNav.querySelector(`[data-page="${activeTabId}"]`)?.classList.add('active');
-
+        
         handleTabChange(activeTabId);
-
-    } else {
-        appHeader.style.display = 'none';
-        bottomNav.style.display = 'none';
     }
 }
 
 function handleTabChange(activeTabId) {
+    // Show/hide sticky footer for cart page
+    if (activeTabId === 'cart-page-content') {
+        pageFooter.style.display = 'block';
+        pageFooter.querySelector('#cart-footer').classList.remove('hidden');
+    }
+
     // Logic to run when a tab becomes active
     switch (activeTabId) {
         case 'home-page-content':
             loadHomePageContent();
             break;
         case 'orders-page-content':
-            // loadOrders();
+            loadOrders();
             break;
         case 'map-page-content':
             initializeMap();
             break;
         case 'profile-page-content':
-            // displayUserProfile();
+            displayUserProfile();
             break;
         case 'cart-page-content':
-             displayCartItems();
+            displayCartItems();
             break;
+    }
+}
+
+// Fire a confetti animation
+function launchConfetti() {
+    const container = document.getElementById('confetti-container');
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animation = `confetti-fall ${1 + Math.random() * 2}s linear forwards`;
+        confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+        container.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
     }
 }
 
@@ -70,30 +94,26 @@ navItems.forEach(item => {
     });
 });
 
-letsGoButton?.addEventListener('click', () => {
-    navigateToPage('main-app-view', 'home-page-content');
-});
-
-editDetailsButton?.addEventListener('click', () => {
-    populateProfileForEditing(window.userProfile);
-    navigateToPage('profile-setup-page');
+searchPageButton?.addEventListener('click', () => navigateToPage('search-page'));
+likesPageButton?.addEventListener('click', () => {
+    navigateToPage('likes-page');
+    loadLikedItems();
 });
 
 // Main App Initialization
 async function checkAuthState() {
     showLoader();
-    const user = await getCurrentUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+
     if (user) {
         window.currentUser = user;
         const profile = await fetchProfile(user.id);
-        
-        if (profile && profile.full_name) { // Check if profile is complete
+        if (profile && profile.full_name) {
             window.userProfile = profile;
             navigateToPage('main-app-view');
-            // Show pop-up notifications on home page load
             showPopUpNotifications();
         } else {
-            // Profile exists but is incomplete or new user
             navigateToPage('profile-setup-page');
         }
     } else {
@@ -105,7 +125,7 @@ async function checkAuthState() {
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         window.currentUser = session.user;
-        checkAuthState(); // Re-check state to fetch profile and navigate
+        checkAuthState(); 
     } else if (event === 'SIGNED_OUT') {
         window.currentUser = null;
         window.userProfile = null;
@@ -114,6 +134,4 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuthState();
-});
+document.addEventListener('DOMContentLoaded', checkAuthState);
