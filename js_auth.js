@@ -29,7 +29,7 @@ async function handleLogin() {
         const { error } = await supabase.auth.signInWithOtp({
             email: email,
             options: {
-                emailRedirectTo: window.location.href, // This now correctly redirects back to the current page
+                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-/home.html", // or index.html if that’s your main page // This now correctly redirects back to the current page
             },
         });
 
