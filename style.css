@@ -74,8 +74,9 @@ button:active {
 .page, .tab-content { display: none; flex-direction: column; }
 .page.active, .tab-content.active { display: flex; animation: fadeIn 0.4s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .page-header { font-size: 1.6em; font-weight: bold; margin-bottom: 20px; text-align: center; color: var(--primary-orange); }
+
+/* Centered Content */
 .centered-content { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; padding: 20px; }
 .app-icon-large { width: 90px; height: 90px; margin-bottom: 20px; }
 
@@ -90,7 +91,6 @@ input[type="email"], input[type="text"], input[type="tel"], select {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 input:focus { border-color: var(--primary-orange); box-shadow: 0 0 0 2px rgba(255, 117, 24, 0.2); outline: none; }
-
 button {
     background-color: var(--primary-orange);
     color: var(--primary-white);
