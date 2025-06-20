@@ -53,7 +53,7 @@
                 <div class="page-content centered-content">
                     <img src="assets/app-logo.png" alt="App Logo" class="app-icon-large">
                     <h2>Welcome to StreetR!</h2>
-                    <p>Your Favorite Foods, Snacks & Juices – Delivered with a Smile!</p>
+                    <p>Your Favorite Foods, Snacks & Juices - Delivered with a Smile!</p>
                     <input type="email" id="login-email" placeholder="Enter your email" autocomplete="email">
                     <div class="terms-container">
                         <input type="checkbox" id="terms-conditions">
@@ -99,39 +99,39 @@
                     <h3>Your Orders</h3>
                     <div id="orders-list"></div>
                 </div>
-                 <div id="cart-page-content" class="tab-content">
+                <div id="cart-page-content" class="tab-content">
                     <h3>Your Cart</h3>
                     <div id="cart-items-container"></div>
                     <div id="cart-empty-view" class="empty-state hidden">
                         <img src="assets/empty-cart.svg" alt="Empty Cart Illustration">
-                        <p>Your cart is empty. Let’s fill it up!</p>
+                        <p>Your cart is empty. Let's fill it up!</p>
                     </div>
                     <div id="cart-summary" class="hidden">
                         <h4>Bill Details</h4>
                         <div class="bill-row"><span>Subtotal</span><span id="cart-subtotal"></span></div>
                         <div class="bill-row"><span>GST (10%)</span><span id="cart-gst"></span></div>
                         <div class="bill-row"><span>Delivery Fee</span><span id="cart-delivery-fee"></span></div>
-                        <div class="bill-row grand-total"><span>Grand Total</span><span id="cart-grand-total"></span></div>
                         <div class="promo-code-container">
                             <input type="text" id="promo-code" placeholder="Enter promo code">
                             <button id="apply-promo-button">Apply</button>
                         </div>
+                        <div class="bill-row grand-total"><span>Grand Total</span><span id="cart-grand-total"></span></div>
                     </div>
                 </div>
                 <div id="map-page-content" class="tab-content">
                     <div id="map-container"></div>
                 </div>
                 <div id="profile-page-content" class="tab-content">
-                     <h3>Your Profile</h3>
-                     <div id="profile-details-view"></div>
-                     <button id="profile-edit-button" class="button-outline">Edit Profile</button>
-                     <button id="help-button" class="button-outline">Help</button>
-                     <button id="logout-button" class="button-danger">Logout</button>
+                    <h3>Your Profile</h3>
+                    <div id="profile-details-view"></div>
+                    <button id="profile-edit-button" class="button-outline">Edit Profile</button>
+                    <button id="help-button" class="button-outline">Help</button>
+                    <button id="logout-button" class="button-danger">Logout</button>
                 </div>
             </div>
 
             <div id="search-page" class="page">
-                 <div class="search-header">
+                <div class="search-header">
                     <i class="fa-solid fa-search"></i>
                     <input type="text" id="search-input" placeholder="Search for food or shops...">
                     <button id="clear-search-btn" class="hidden"><i class="fa-solid fa-times"></i></button>
@@ -157,7 +157,7 @@
                 </div>
                 <button id="qr-scanner-button" class="qr-scanner-fab"><i class="fa-solid fa-qrcode"></i></button>
             </div>
-            
+
             <div id="qr-scanner-page" class="page">
                 <div class="page-header">Scan Seller QR Code</div>
                 <div id="qr-reader"></div>
@@ -167,18 +167,15 @@
             <div id="likes-page" class="page">
                 <div class="page-header">Your Liked Items</div>
                 <div id="liked-items-container" class="item-grid"></div>
-                 <div id="likes-empty-state" class="empty-state hidden">
+                <div id="likes-empty-state" class="empty-state hidden">
                     <img src="assets/no-likes.svg" alt="No liked items">
                     <p>You haven't liked any items yet.</p>
                 </div>
             </div>
 
-            <div id="item-detail-page" class="page">
-                 </div>
-            
-            <div id="shop-profile-page" class="page">
-                </div>
-            
+            <div id="item-detail-page" class="page"></div>
+            <div id="shop-profile-page" class="page"></div>
+
             <div id="payment-page" class="page">
                 <div class="page-header">Complete Your Payment</div>
                 <div class="page-content centered-content">
@@ -192,12 +189,11 @@
                     <button id="back-to-cart-button" class="button-outline">Back to Cart</button>
                 </div>
             </div>
-
         </main>
 
         <footer id="page-footer" style="display: none;">
             <div id="cart-footer" class="hidden">
-                 <button id="place-order-button">Place Order</button>
+                <button id="place-order-button">Place Order</button>
             </div>
         </footer>
 
