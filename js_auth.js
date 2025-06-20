@@ -24,15 +24,16 @@ async function handleLogin() {
     loginButton.disabled = true;
 
     try {
+        // *** FIX: Use a dynamic redirect URL ***
+        // This ensures the magic link works in both local development and production.
         const { error } = await supabase.auth.signInWithOtp({
             email: email,
             options: {
-                emailRedirectTo: "https://jeyaram1023.github.io/StreetR-customer-app-/", // Your specified redirect link
+                emailRedirectTo: window.location.href, // This now correctly redirects back to the current page
             },
         });
-        
+
         if (error) throw error;
-        
         loginMessage.textContent = 'Login link sent! Please check your email to sign in.';
     } catch (error) {
         console.error('Login error:', error);
@@ -51,7 +52,6 @@ async function handleLogout() {
         console.error('Logout error:', error);
         alert('Error logging out: ' + error.message);
     } else {
-        // Clear all local data on logout
         localStorage.clear();
         window.currentUser = null;
         window.userProfile = null;
