@@ -1,179 +1,151 @@
-// js_search.js
+// js/js_search_filter.js
+const searchInput = document.getElementById('search-input');
+const clearSearchBtn = document.getElementById('clear-search-btn');
+const suggestionTags = document.querySelectorAll('.suggestion-tag');
+const searchTabs = document.querySelectorAll('.search-tab');
+const foodResultsContainer = document.getElementById('search-results-food');
+const shopsResultsContainer = document.getElementById('search-results-shops');
+const searchResultsContent = document.querySelectorAll('.search-results-content');
+const emptyState = document.getElementById('search-empty-state');
+const searchQueryDisplay = document.getElementById('search-query-display');
 
-document.addEventListener('DOMContentLoaded', () => {
-    const searchButton = document.getElementById('search-button');
-    const searchInput = document.getElementById('search-input');
-    const clearSearchButton = document.getElementById('clear-search-button');
-    const searchSuggestionsContainer = document.getElementById('search-suggestions');
-    const foodItemsTab = document.getElementById('food-items-tab');
-    const shopsTab = document.getElementById('shops-tab');
-    const foodResultsContainer = document.getElementById('food-results');
-    const shopResultsContainer = document.getElementById('shop-results');
-    const emptyState = document.getElementById('empty-state');
-    const emptyStateText = document.getElementById('empty-state-text');
+let searchTimeout;
 
-    let currentSearchQuery = '';
-    let currentTab = 'food'; // 'food' or 'shop'
+// Event Listeners
+searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    clearSearchBtn.classList.toggle('hidden', searchInput.value === '');
+    searchTimeout = setTimeout(() => {
+        performSearch(searchInput.value.trim());
+    }, 300);
+});
 
-    // --- Search Page Navigation ---
-    searchButton.addEventListener('click', () => {
-        navigateToPage('main-app-view', 'search-page-content');
-        searchInput.focus();
-        displaySearchResults(searchInput.value.trim()); // Initial display based on current input
+clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.classList.add('hidden');
+    clearResults();
+});
+
+suggestionTags.forEach(tag => {
+    tag.addEventListener('click', () => {
+        searchInput.value = tag.textContent;
+        performSearch(tag.textContent);
     });
+});
 
-    // --- Search Input and Clear Button ---
-    searchInput.addEventListener('input', () => {
-        currentSearchQuery = searchInput.value.trim();
-        clearSearchButton.style.display = currentSearchQuery ? 'block' : 'none';
-        displaySearchResults(currentSearchQuery);
+searchTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        searchTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        searchResultsContent.forEach(content => content.classList.remove('active'));
+        const targetContentId = `search-results-${tab.dataset.tab}`;
+        document.getElementById(targetContentId).classList.add('active');
     });
+});
 
-    clearSearchButton.addEventListener('click', () => {
-        searchInput.value = '';
-        currentSearchQuery = '';
-        clearSearchButton.style.display = 'none';
-        displaySearchResults(''); // Clear results
-    });
+function clearResults() {
+    foodResultsContainer.innerHTML = '';
+    shopsResultsContainer.innerHTML = '';
+    emptyState.classList.add('hidden');
+}
 
-    // --- Search Suggestions & History (simplified as static tags for now) ---
-    searchSuggestionsContainer.addEventListener('click', (event) => {
-        if (event.target.classList.contains('search-tag')) {
-            searchInput.value = event.target.textContent;
-            currentSearchQuery = searchInput.value.trim();
-            clearSearchButton.style.display = 'block';
-            displaySearchResults(currentSearchQuery);
-        }
-    });
+async function performSearch(query) {
+    if (!query) {
+        clearResults();
+        return;
+    }
 
-    // --- Filter Tabs ---
-    foodItemsTab.addEventListener('click', () => {
-        foodItemsTab.classList.add('active');
-        shopsTab.classList.remove('active');
-        foodResultsContainer.classList.add('active');
-        shopResultsContainer.classList.remove('active');
-        currentTab = 'food';
-        displaySearchResults(currentSearchQuery);
-    });
+    showLoader();
+    clearResults();
+    searchQueryDisplay.textContent = query;
 
-    shopsTab.addEventListener('click', () => {
-        shopsTab.classList.add('active');
-        foodItemsTab.classList.remove('active');
-        shopResultsContainer.classList.add('active');
-        foodResultsContainer.classList.remove('active');
-        currentTab = 'shop';
-        displaySearchResults(currentSearchQuery);
-    });
-
-    // --- Display Search Results ---
-    async function displaySearchResults(query) {
-        showLoader();
-        foodResultsContainer.innerHTML = '';
-        shopResultsContainer.innerHTML = '';
-        emptyState.classList.add('hidden');
-
-        if (!query) {
-            hideLoader();
-            // Optionally show popular or recent items/shops if query is empty
+    try {
+        const pincode = window.userProfile?.pincode;
+        if (!pincode) {
+            emptyState.classList.remove('hidden');
             return;
         }
 
-        try {
-            const user = window.currentUser;
-            if (!user) {
-                console.error('User not logged in, cannot search.');
-                hideLoader();
-                return;
-            }
+        // Fetch sellers in the area first
+        const { data: sellers, error: sellersError } = await supabase
+            .from('profiles')
+            .select('id, shop_name, business_category')
+            .eq('user_type', 'Seller')
+            .eq('pincode', pincode);
+        if (sellersError) throw sellersError;
+        const sellerIds = sellers.map(s => s.id);
 
-            const userPincode = window.userProfile?.pincode;
-
-            // --- Search Food Items ---
-            if (currentTab === 'food') {
-                const { data: foodItems, error: foodError } = await supabase
-                    .from('menu_items')
-                    .select('*, profiles!seller_id(pincode, shop_name)') // Fetch pincode and shop_name from seller profile
-                    .ilike('name', `%${query}%`)
-                    .eq('is_available', true);
-
-                if (foodError) throw foodError;
-
-                const filteredFoodItems = foodItems.filter(item => {
-                    return item.profiles && item.profiles.pincode === userPincode;
-                });
-
-                if (filteredFoodItems.length > 0) {
-                    filteredFoodItems.forEach(item => {
-                        const foodCard = createItemCard(item); // Re-use createItemCard from js_home.js
-                        foodResultsContainer.appendChild(foodCard);
-                    });
-                } else {
-                    emptyState.classList.remove('hidden');
-                    emptyStateText.textContent = `No food items found for '${query}' in your area. Try another keyword!`;
-                }
-            }
-            
-            // --- Search Shops ---
-            if (currentTab === 'shop') {
-                const { data: shops, error: shopError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('user_type', 'Seller')
-                    .ilike('shop_name', `%${query}%`);
-
-                if (shopError) throw shopError;
-
-                const filteredShops = shops.filter(shop => {
-                    return shop.pincode === userPincode;
-                });
-
-                if (filteredShops.length > 0) {
-                    filteredShops.forEach(shop => {
-                        const shopCard = document.createElement('div');
-                        shopCard.className = 'shop-card';
-                        shopCard.innerHTML = `
-                            <img src="${shop.logo_url || 'assets/placeholder-shop.png'}" alt="${shop.shop_name}" class="shop-logo">
-                            <h4>${shop.shop_name}</h4>
-                            <p class="rating">⭐️ ${shop.rating || 'N/A'}</p>
-                            <p class="distance">${shop.distance || 'N/A'} km</p>
-                        `;
-                        shopCard.addEventListener('click', () => {
-                            navigateToShopProfilePage(shop.id);
-                        });
-                        shopResultsContainer.appendChild(shopCard);
-                    });
-                } else {
-                    emptyState.classList.remove('hidden');
-                    emptyStateText.textContent = `No shops found for '${query}' in your area. Try another keyword!`;
-                }
-            }
-
-        } catch (error) {
-            console.error('Error fetching search results:', error.message);
+        if (sellerIds.length === 0) {
             emptyState.classList.remove('hidden');
-            emptyStateText.textContent = `Error searching for '${query}'. Please try again.`;
-        } finally {
-            hideLoader();
+            return;
         }
-    }
+        
+        // Search for food items
+        const { data: foodItems, error: foodError } = await supabase
+            .from('menu_items')
+            .select('*')
+            .in('seller_id', sellerIds)
+            .ilike('name', `%${query}%`);
+        if (foodError) throw foodError;
+        
+        renderFoodResults(foodItems);
 
-    // Function to navigate to shop profile page and load its menu
-    async function navigateToShopProfilePage(shopId) {
-        showLoader();
-        console.log(`Navigating to shop profile page for shop ID: ${shopId}`);
-        // For simplicity, we'll navigate back to home page and simulate showing menu items from that shop
-        // In a real app, you would have a dedicated shop profile page (e.g., 'shop-profile.html')
-        // or a modal that loads the shop's menu.
+        // Search for shops
+        const filteredShops = sellers.filter(s => 
+            s.shop_name.toLowerCase().includes(query.toLowerCase()) || 
+            s.business_category.toLowerCase().includes(query.toLowerCase())
+        );
+        renderShopResults(filteredShops);
+        
+        if (foodItems.length === 0 && filteredShops.length === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+        }
 
-        // For now, let's just log and perhaps display an alert, then go back to home or a relevant page
-        alert(`Showing menu for shop ID: ${shopId}. This would typically load a detailed shop profile.`);
-
-        // If you want to actually display the shop's menu on the home page or a temporary view:
-        // You would need to fetch menu items for this shopId and render them.
-        // For demonstration, let's just go back to home for now.
-        navigateToPage('main-app-view', 'home-page-content');
-        loadHomePageContent(); // Reload home content
-
+    } catch (error) {
+        console.error('Search error:', error);
+        emptyState.classList.remove('hidden');
+    } finally {
         hideLoader();
     }
-});
+}
+
+function renderFoodResults(items) {
+    foodResultsContainer.innerHTML = '';
+    if(items.length === 0) {
+        foodResultsContainer.innerHTML = '<p class="no-results-small">No food items found.</p>';
+        return;
+    }
+    const itemGrid = document.createElement('div');
+    itemGrid.className = 'item-grid';
+    renderItems(items, itemGrid, 'search-food'); // Using the renderer from js_home.js
+    foodResultsContainer.appendChild(itemGrid);
+}
+
+function renderShopResults(shops) {
+    shopsResultsContainer.innerHTML = '';
+     if(shops.length === 0) {
+        shopsResultsContainer.innerHTML = '<p class="no-results-small">No shops found.</p>';
+        return;
+    }
+    const shopList = document.createElement('div');
+    shopList.className = 'shop-list'; // You'd style this class for a list view
+    shops.forEach(shop => {
+        const shopCard = document.createElement('div');
+        shopCard.className = 'shop-card';
+        shopCard.dataset.shopId = shop.id;
+        shopCard.innerHTML = `
+            <img src="assets/shop-placeholder.png" alt="${shop.shop_name}">
+            <div class="shop-card-content">
+                <h4>${shop.shop_name}</h4>
+                <p>Rating: 4.5 <i class="fa-solid fa-star"></i></p>
+                <p>Distance: 1.2 km</p>
+            </div>
+        `;
+        shopCard.addEventListener('click', () => showShopProfilePage(shop.id));
+        shopList.appendChild(shopCard);
+    });
+    shopsResultsContainer.appendChild(shopList);
+}
