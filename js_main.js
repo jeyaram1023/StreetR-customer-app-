@@ -1,4 +1,3 @@
-// js/js_main.js
 const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
 const tabContents = document.querySelectorAll('#main-app-view .tab-content');
@@ -28,7 +27,7 @@ function navigateToPage(pageId, tabContentId = null) {
     const isMainView = pageId === 'main-app-view';
     appHeader.style.display = isMainView ? 'flex' : 'none';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
-    
+
     // Manage footer visibility (for cart's sticky button)
     pageFooter.style.display = 'none';
     pageFooter.querySelector('#cart-footer').classList.add('hidden');
@@ -37,10 +36,10 @@ function navigateToPage(pageId, tabContentId = null) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
-        
+
         document.getElementById(activeTabId)?.classList.add('active');
         bottomNav.querySelector(`[data-page="${activeTabId}"]`)?.classList.add('active');
-        
+
         handleTabChange(activeTabId);
     }
 }
@@ -100,32 +99,49 @@ likesPageButton?.addEventListener('click', () => {
     loadLikedItems();
 });
 
-// Main App Initialization
+// ✅ Fixed: Main App Initialization with session wait
 async function checkAuthState() {
     showLoader();
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
 
-    if (user) {
-        window.currentUser = user;
-        const profile = await fetchProfile(user.id);
-        if (profile && profile.full_name) {
-            window.userProfile = profile;
-            navigateToPage('main-app-view');
-            showPopUpNotifications();
-        } else {
-            navigateToPage('profile-setup-page');
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+        console.error("Session error:", error.message);
+        navigateToPage('login-page');
+        hideLoader();
+        return;
+    }
+
+    if (session && session.user) {
+        window.currentUser = session.user;
+
+        try {
+            const profile = await fetchProfile(session.user.id);
+
+            if (profile && profile.full_name) {
+                window.userProfile = profile;
+                navigateToPage('main-app-view');
+                showPopUpNotifications();
+            } else {
+                navigateToPage('profile-setup-page');
+            }
+        } catch (e) {
+            console.error("Error fetching profile:", e.message);
+            navigateToPage('login-page');
         }
     } else {
+        console.log("No active session found");
         navigateToPage('login-page');
     }
+
     hideLoader();
 }
 
+// Re-check on Supabase auth changes
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         window.currentUser = session.user;
-        checkAuthState(); 
+        checkAuthState();
     } else if (event === 'SIGNED_OUT') {
         window.currentUser = null;
         window.userProfile = null;
@@ -134,4 +150,5 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
 });
 
+// Run session check on page load
 document.addEventListener('DOMContentLoaded', checkAuthState);
