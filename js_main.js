@@ -1,9 +1,9 @@
+
 //  js_main.js
 
 // Global state variables
 window.currentUser = null;
 window.userProfile = null;
-let pageHistory = [];
 
 // DOM Element selectors
 const pages = document.querySelectorAll('.page');
@@ -11,49 +11,44 @@ const navItems = document.querySelectorAll('.nav-item');
 const tabContents = document.querySelectorAll('#main-app-view .tab-content');
 const appHeader = document.getElementById('app-header');
 const bottomNav = document.getElementById('bottom-nav');
-const backButton = document.getElementById('back-button');
+const pageFooter = document.getElementById('page-footer');
 const searchPageButton = document.getElementById('search-page-button');
 const likesPageButton = document.getElementById('likes-page-button');
 
 // --- LOADER ---
-function showLoader() {
-    document.getElementById('loading-modal').classList.remove('hidden');
-}
-function hideLoader() {
-    document.getElementById('loading-modal').classList.add('hidden');
-}
+function showLoader() { document.getElementById('loading-modal').classList.remove('hidden'); }
+function hideLoader() { document.getElementById('loading-modal').classList.add('hidden'); }
 
 // --- NAVIGATION ---
 function navigateToPage(pageId, tabContentId = null) {
-    const currentPage = document.querySelector('.page.active');
-    if (currentPage && currentPage.id !== pageId) {
-        pageHistory.push(currentPage.id);
-    }
-
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId)?.classList.add('active');
 
     const isMainView = pageId === 'main-app-view';
-    appHeader.style.display = 'flex';
+    appHeader.style.display = isMainView ? 'flex' : 'none';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
-    backButton.classList.toggle('hidden', isMainView);
+    
+    pageFooter.style.display = 'none';
+    pageFooter.querySelector('#cart-footer').classList.add('hidden');
 
     if (isMainView) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
+        
         document.getElementById(activeTabId)?.classList.add('active');
         bottomNav.querySelector(`[data-page="${activeTabId}"]`)?.classList.add('active');
+        
         handleTabChange(activeTabId);
     }
 }
 
-// ✅ MODIFIED FUNCTION: Always go to homepage
-function goBack() {
-    navigateToPage('main-app-view');
-}
-
 function handleTabChange(activeTabId) {
+    if (activeTabId === 'cart-page-content') {
+        pageFooter.style.display = 'block';
+        pageFooter.querySelector('#cart-footer').classList.remove('hidden');
+    }
+
     switch (activeTabId) {
         case 'home-page-content': loadHomePageContent(); break;
         case 'orders-page-content': loadOrders(); break;
@@ -80,10 +75,10 @@ async function fetchProfile(userId) {
 async function handleUserSession(session) {
     window.currentUser = session.user;
     const profile = await fetchProfile(session.user.id);
+
     if (profile && profile.full_name) {
         window.userProfile = profile;
         navigateToPage('main-app-view');
-        showPopUpNotifications();
     } else if (profile) {
         window.userProfile = profile;
         navigateToPage('profile-setup-page');
@@ -110,13 +105,12 @@ supabase.auth.onAuthStateChange((event, session) => {
         window.currentUser = null;
         window.userProfile = null;
         localStorage.clear();
-        pageHistory = [];
         navigateToPage('login-page');
     }
 });
 
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
+// --- EVENT LISTENERS & INITIALIZATION ---
+function setupNavigationListeners() {
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetTabId = item.getAttribute('data-page');
@@ -124,12 +118,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    backButton.addEventListener('click', goBack);
     searchPageButton?.addEventListener('click', () => navigateToPage('search-page'));
     likesPageButton?.addEventListener('click', () => {
         navigateToPage('likes-page');
         loadLikedItems();
     });
 
+    document.querySelectorAll('.back-button').forEach(button => {
+        button.addEventListener('click', () => {
+            navigateToPage('main-app-view', 'home-page-content');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupNavigationListeners();
     checkAuthState();
 });
+
