@@ -1,4 +1,4 @@
-//js_main.js
+//  js_main.js
 
 // Global state variables
 window.currentUser = null;
@@ -36,7 +36,7 @@ function navigateToPage(pageId, tabContentId = null) {
     const isMainView = pageId === 'main-app-view';
     appHeader.style.display = 'flex';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
-    backButton.classList.toggle('hidden', isMainView || pageHistory.length === 0);
+    backButton.classList.toggle('hidden', isMainView);
 
     if (isMainView) {
         let activeTabId = tabContentId || 'home-page-content';
@@ -48,13 +48,9 @@ function navigateToPage(pageId, tabContentId = null) {
     }
 }
 
+// ✅ MODIFIED FUNCTION: Always go to homepage
 function goBack() {
-    const previousPageId = pageHistory.pop();
-    if (previousPageId) {
-        navigateToPage(previousPageId);
-    } else {
-        navigateToPage('main-app-view');
-    }
+    navigateToPage('main-app-view');
 }
 
 function handleTabChange(activeTabId) {
@@ -67,14 +63,14 @@ function handleTabChange(activeTabId) {
     }
 }
 
-// --- AUTHENTICATION FLOW (THE FIX) ---
+// --- AUTHENTICATION FLOW ---
 async function fetchProfile(userId) {
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-    if (error && error.code !== 'PGRST116') { // PGRST116 = 'exact one row not found'
+    if (error && error.code !== 'PGRST116') {
         console.error("Error fetching profile:", error);
         return null;
     }
@@ -84,14 +80,14 @@ async function fetchProfile(userId) {
 async function handleUserSession(session) {
     window.currentUser = session.user;
     const profile = await fetchProfile(session.user.id);
-    if (profile && profile.full_name) { // Profile is complete
+    if (profile && profile.full_name) {
         window.userProfile = profile;
         navigateToPage('main-app-view');
         showPopUpNotifications();
-    } else if (profile) { // Profile exists but is incomplete
+    } else if (profile) {
         window.userProfile = profile;
         navigateToPage('profile-setup-page');
-    } else { // Profile does not exist (should be rare with the trigger)
+    } else {
         navigateToPage('profile-setup-page');
     }
 }
@@ -113,7 +109,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     } else if (event === 'SIGNED_OUT') {
         window.currentUser = null;
         window.userProfile = null;
-        localStorage.clear(); // Clear all data on logout
+        localStorage.clear();
         pageHistory = [];
         navigateToPage('login-page');
     }
@@ -121,7 +117,6 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Nav item clicks
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetTabId = item.getAttribute('data-page');
@@ -129,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Header button clicks
     backButton.addEventListener('click', goBack);
     searchPageButton?.addEventListener('click', () => navigateToPage('search-page'));
     likesPageButton?.addEventListener('click', () => {
@@ -137,6 +131,5 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLikedItems();
     });
 
-    // Initial auth check
     checkAuthState();
 });
