@@ -1,4 +1,4 @@
-// js/js_payment.js (New File)
+// js_payment.js (New File)
 
 document.addEventListener('DOMContentLoaded', () => {
     const payWithRazorpayButton = document.getElementById('pay-with-razorpay-button');
