@@ -1,4 +1,6 @@
-// js/js_home.js
+
+
+// js_home.js
 const popularItemsContainer = document.getElementById('popular-items-container');
 const allItemsContainer = document.getElementById('all-items-container');
 const itemDetailPage = document.getElementById('item-detail-page');
@@ -194,3 +196,4 @@ async function showItemDetailPage(itemId) {
         hideLoader();
     }
 }
+
