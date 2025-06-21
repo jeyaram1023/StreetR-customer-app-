@@ -1,4 +1,5 @@
-//js_auth.js
+// js_auth.js
+
 const loginEmailInput = document.getElementById('login-email');
 const loginButton = document.getElementById('login-button');
 const termsCheckbox = document.getElementById('terms-conditions');
@@ -53,7 +54,6 @@ async function handleLogout() {
     hideLoader();
 }
 
-// Event Listeners
 if (loginButton) {
     loginButton.addEventListener('click', handleLogin);
 }
