@@ -1,4 +1,3 @@
-
 //  js_main.js
 
 // Global state variables
@@ -135,4 +134,3 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigationListeners();
     checkAuthState();
 });
-
