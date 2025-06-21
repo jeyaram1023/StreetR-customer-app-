@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div id="app">
         <div id="loading-modal" class="modal-overlay hidden">
@@ -20,19 +22,32 @@
         </div>
 
         <div id="notification-popup-1" class="popup-notification hidden">
-            <button class="close-popup-btn">&times;</button>
+            <button class="close-popup-btn">x</button>
             <img src="assets/promo-1.png" alt="Promo 1">
         </div>
+
         <div id="notification-popup-2" class="popup-notification hidden">
-            <button class="close-popup-btn">&times;</button>
+            <button class="close-popup-btn">x</button>
             <img src="assets/promo-2.png" alt="Promo 2">
         </div>
+
         <div id="notification-popup-3" class="popup-notification hidden">
-            <button class="close-popup-btn">&times;</button>
+            <button class="close-popup-btn">x</button>
             <img src="assets/promo-3.png" alt="Promo 3">
             <div class="popup-footer">
                 <input type="checkbox" id="dont-show-again">
                 <label for="dont-show-again">Don't show this again</label>
+            </div>
+        </div>
+
+        <div id="more-menu-popup" class="more-menu-popup hidden">
+            <div class="more-menu-overlay"></div>
+            <div class="more-menu-content">
+                <h3>More Options</h3>
+                <a href="https://www.example.com/moms" target="_blank" class="more-menu-item">Mom's</a>
+                <a href="https://www.example.com/puja" target="_blank" class="more-menu-item">Pujja</a>
+                <a href="https://www.example.com/groceries" target="_blank" class="more-menu-item">Groceries</a>
+                <button id="close-more-menu-btn" class="button-outline">Close</button>
             </div>
         </div>
 
@@ -53,11 +68,11 @@
                 <div class="page-content centered-content">
                     <img src="assets/app-logo.png" alt="App Logo" class="app-icon-large">
                     <h2>Welcome to StreetR!</h2>
-                    <p>Your Favorite Foods, Snacks & Juices - Delivered with a Smile!</p>
+                    <p>Your Favorite Foods, Snacks & Juices Delivered with a Smile!</p>
                     <input type="email" id="login-email" placeholder="Enter your email" autocomplete="email">
                     <div class="terms-container">
                         <input type="checkbox" id="terms-conditions">
-                        <label for="terms-conditions">I agree to the <a href="#" target="_blank">Terms & Conditions</a></label>
+                        <label for="terms-conditions">I agree to the <a href="#" target=" blank">Terms & Conditions</a></label>
                     </div>
                     <button id="login-button">Get Magic Link</button>
                     <p id="login-message" class="message"></p>
@@ -131,6 +146,9 @@
             </div>
 
             <div id="search-page" class="page">
+                <div class="page-header-with-back">
+                    <button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
                 <div class="search-header">
                     <i class="fa-solid fa-search"></i>
                     <input type="text" id="search-input" placeholder="Search for food or shops...">
@@ -159,12 +177,18 @@
             </div>
 
             <div id="qr-scanner-page" class="page">
+                <div class="page-header-with-back">
+                    <button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
                 <div class="page-header">Scan Seller QR Code</div>
                 <div id="qr-reader"></div>
                 <button id="close-scanner-button">Close Scanner</button>
             </div>
 
             <div id="likes-page" class="page">
+                <div class="page-header-with-back">
+                    <button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
                 <div class="page-header">Your Liked Items</div>
                 <div id="liked-items-container" class="item-grid"></div>
                 <div id="likes-empty-state" class="empty-state hidden">
@@ -177,6 +201,9 @@
             <div id="shop-profile-page" class="page"></div>
 
             <div id="payment-page" class="page">
+                <div class="page-header-with-back">
+                    <button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
                 <div class="page-header">Complete Your Payment</div>
                 <div class="page-content centered-content">
                     <p>Scan the QR code to pay or use Razorpay.</p>
@@ -189,6 +216,7 @@
                     <button id="back-to-cart-button" class="button-outline">Back to Cart</button>
                 </div>
             </div>
+
         </main>
 
         <footer id="page-footer" style="display: none;">
@@ -213,12 +241,14 @@
             <button data-page="profile-page-content" class="nav-item">
                 <i class="fa-solid fa-user"></i><span>Profile</span>
             </button>
+            <button id="more-nav-button" class="nav-item">
+                <i class="fa fa-bars"></i><span>More</span>
+            </button>
         </nav>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    
     <script src="js_supabase.js"></script>
     <script src="js_auth.js"></script>
     <script src="js_main.js"></script>
@@ -234,4 +264,5 @@
     <script src="js_map.js"></script>
     <script src="js_notification.js"></script>
 </body>
+
 </html>
