@@ -1,7 +1,9 @@
 //js_main.js
+
 // Global state variables
 window.currentUser = null;
 window.userProfile = null;
+let pageHistory = [];
 
 // DOM Element selectors
 const pages = document.querySelectorAll('.page');
@@ -9,45 +11,53 @@ const navItems = document.querySelectorAll('.nav-item');
 const tabContents = document.querySelectorAll('#main-app-view .tab-content');
 const appHeader = document.getElementById('app-header');
 const bottomNav = document.getElementById('bottom-nav');
-const pageFooter = document.getElementById('page-footer');
+const backButton = document.getElementById('back-button');
 const searchPageButton = document.getElementById('search-page-button');
 const likesPageButton = document.getElementById('likes-page-button');
 
 // --- LOADER ---
-function showLoader() { document.getElementById('loading-modal').classList.remove('hidden'); }
-function hideLoader() { document.getElementById('loading-modal').classList.add('hidden'); }
+function showLoader() {
+    document.getElementById('loading-modal').classList.remove('hidden');
+}
+function hideLoader() {
+    document.getElementById('loading-modal').classList.add('hidden');
+}
 
 // --- NAVIGATION ---
 function navigateToPage(pageId, tabContentId = null) {
+    const currentPage = document.querySelector('.page.active');
+    if (currentPage && currentPage.id !== pageId) {
+        pageHistory.push(currentPage.id);
+    }
+
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId)?.classList.add('active');
 
     const isMainView = pageId === 'main-app-view';
-    appHeader.style.display = isMainView ? 'flex' : 'none';
+    appHeader.style.display = 'flex';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
-    
-    // Manage footer visibility for cart's sticky button
-    pageFooter.style.display = 'none';
-    pageFooter.querySelector('#cart-footer').classList.add('hidden');
+    backButton.classList.toggle('hidden', isMainView || pageHistory.length === 0);
 
     if (isMainView) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
-        
         document.getElementById(activeTabId)?.classList.add('active');
         bottomNav.querySelector(`[data-page="${activeTabId}"]`)?.classList.add('active');
-        
         handleTabChange(activeTabId);
     }
 }
 
-function handleTabChange(activeTabId) {
-    if (activeTabId === 'cart-page-content') {
-        pageFooter.style.display = 'block';
-        pageFooter.querySelector('#cart-footer').classList.remove('hidden');
+function goBack() {
+    const previousPageId = pageHistory.pop();
+    if (previousPageId) {
+        navigateToPage(previousPageId);
+    } else {
+        navigateToPage('main-app-view');
     }
+}
 
+function handleTabChange(activeTabId) {
     switch (activeTabId) {
         case 'home-page-content': loadHomePageContent(); break;
         case 'orders-page-content': loadOrders(); break;
@@ -74,11 +84,10 @@ async function fetchProfile(userId) {
 async function handleUserSession(session) {
     window.currentUser = session.user;
     const profile = await fetchProfile(session.user.id);
-
     if (profile && profile.full_name) { // Profile is complete
         window.userProfile = profile;
         navigateToPage('main-app-view');
-        showPopUpNotifications(); // Show popups on successful login to main app
+        showPopUpNotifications();
     } else if (profile) { // Profile exists but is incomplete
         window.userProfile = profile;
         navigateToPage('profile-setup-page');
@@ -105,23 +114,10 @@ supabase.auth.onAuthStateChange((event, session) => {
         window.currentUser = null;
         window.userProfile = null;
         localStorage.clear(); // Clear all data on logout
+        pageHistory = [];
         navigateToPage('login-page');
     }
 });
-
-// --- UI & ANIMATIONS ---
-function launchConfetti() {
-    const container = document.getElementById('confetti-container');
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = `${Math.random() * 100}vw`;
-        confetti.style.animation = `confetti-fall ${1 + Math.random() * 2}s linear forwards`;
-        confetti.style.animationDelay = `${Math.random() * 0.5}s`;
-        container.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 3000);
-    }
-}
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -134,13 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Header button clicks
+    backButton.addEventListener('click', goBack);
     searchPageButton?.addEventListener('click', () => navigateToPage('search-page'));
     likesPageButton?.addEventListener('click', () => {
         navigateToPage('likes-page');
         loadLikedItems();
     });
-    
+
     // Initial auth check
     checkAuthState();
 });
-
