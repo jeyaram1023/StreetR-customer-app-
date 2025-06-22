@@ -51,21 +51,24 @@ button:active {
 /* Header & Footer */
 
 
+
 .app-header {
+    position: fixed;                /* Floating at the top */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
     background-color: var(--primary-orange);
     color: var(--primary-white);
     padding: 8px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Header Title on the Left */
+/* Header Title on the👇🏻👆🏻 Left */
 .header-title {
     font-size: 1.3em;
     font-weight: 600;
@@ -98,11 +101,11 @@ button:active {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
 }
 
-/* Page Container */
+/* Main Page Container */
 #page-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 70px 15px 15px; /* Top padding added to avoid header overlap */
     position: relative;
 }
 
@@ -118,20 +121,20 @@ button:active {
     animation: fadeIn 0.4s ease;
 }
 
-/* Fade Animation */
+/* Fade In Animation */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
-/* Page Header inside each page */
+/* Page Title/Header */
 .page-header {
     font-size: 1.6em;
     font-weight: bold;
     margin-bottom: 20px;
     text-align: center;
     color: var(--primary-orange);
-}
+}6
 
 /* Centered Content */
 .centered-content {
