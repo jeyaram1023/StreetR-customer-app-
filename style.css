@@ -20,23 +20,28 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-body {
+/* MODIFIED: Added html, body height and overflow control */
+html, body {
+    height: 100%;
+    overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--background-grey);
     color: var(--text-dark);
     overscroll-behavior-y: contain;
 }
 
+/* MODIFIED: Ensured #app fits viewport properly */
 #app {
     max-width: 600px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     min-height: 100dvh; /* Use dynamic viewport height */
+    max-height: 100dvh; /* Added to constrain height */
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     background-color: var(--primary-white);
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* Changed from overflow: hidden to ensure consistency */
 }
 
 /* Transitions */
@@ -49,9 +54,6 @@ button:active {
 }
 
 /* Header & Footer */
-
-
-
 .app-header {
     position: fixed;                /* Floating at the top */
     top: 0;
@@ -101,11 +103,11 @@ button:active {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
 }
 
-/* Main Page Container */
+/* MODIFIED: Fixed #page-container padding */
 #page-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 70px 15px 15px; /* Top padding added to avoid header overlap */
+    padding: 70px 15px 100px; /* Top padding for header, bottom for nav bar */
     position: relative;
 }
 
@@ -134,7 +136,7 @@ button:active {
     margin-bottom: 20px;
     text-align: center;
     color: var(--primary-orange);
-}6
+}
 
 /* Centered Content */
 .centered-content {
@@ -201,7 +203,6 @@ button:hover {
 }
 
 /* --- BOTTOM NAVIGATION BAR (FIXED) --- */
-
 .bottom-nav {
     position: fixed;
     bottom: 20px; /* float above bottom */
@@ -305,7 +306,6 @@ button:hover {
     margin-top: 15px;
     width: 100%;
 }
-
 
 /* Item and Shop Cards */
 .item-grid {
