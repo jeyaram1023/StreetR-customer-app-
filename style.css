@@ -688,21 +688,24 @@ button:hover {
 }
 
 #place-order-button {
-    background-color: #20B2AA; /* 🔁 Updated color */
-    color: var(--primary-white); /* Text stays white */
+    background-color: #20B2AA;
+    color: var(--primary-white);
     padding: 14px 20px;
     border: none;
     border-radius: var(--border-radius);
     font-size: 1.1em;
     font-weight: bold;
-    width: 100%;
+    width: calc(100% - 30px); /* Left & right padding */
+    margin: 0 auto; /* center align */
 
-    /* 👇 Position fix */
-    margin-top: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 10;
+    /* 👇 Fixed to bottom */
+    position: fixed;
+    bottom: 20px; /* Footerக்கு மேல 20px gap */
+    left: 0;
+    right: 0;
+
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    z-index: 999; /* மேலேயா காட்டும் */
 }
 
 
