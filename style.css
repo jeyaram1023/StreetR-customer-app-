@@ -537,8 +537,11 @@ button:hover {
     color: var(--text-dark);
     border-radius: 50%;
     font-size: 1em;
+    display: flex;               /* Add this */
+    align-items: center;        /* Center vertically */
+    justify-content: center;    /* Center horizontally */
+    padding: 0;                 /* Remove any default padding */
 }
-
 .quantity-controls span {
     font-weight: bold;
 }
