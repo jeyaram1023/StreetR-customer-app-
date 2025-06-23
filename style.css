@@ -694,23 +694,26 @@ button:hover {
     color: var(--primary-white);
     padding: 14px 20px;
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: 20px;
     font-size: 1.1em;
     font-weight: bold;
-    width: calc(100% - 40px); /* gives side spacing */
+    width: calc(100% - 40px);
     margin: 0 auto;
 
-    /* Floating effect */
-    position: Floating;
-    bottom: 80px; /* 🔼 Increased from 20px → 80px (higher float) */
+    /* Floating settings */
+    position: fixed;
+    bottom: 100px; /* 🔼 place it higher from the footer */
     left: 0;
     right: 0;
+    z-index: 999;
 
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
+#place-order-button:active {
+    transform: scale(0.96);
+}
 /* Helper classes */
 .hidden {
     display: none !important;
