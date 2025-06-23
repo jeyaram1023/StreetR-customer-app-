@@ -1,5 +1,3 @@
-
-
 // js_home.js
 const popularItemsContainer = document.getElementById('popular-items-container');
 const allItemsContainer = document.getElementById('all-items-container');
@@ -67,7 +65,7 @@ function renderItems(items, container, context) {
                         <span class="like-count">${item.like_count}</span>
                     </div>
                     <div>
-                        <button class="share-button" data-name="${item.name}"><i class="fa-solid fa-share-alt"></i></button>
+                        <button class="share-button" data-name="${item.name}" data-item-id="${item.id}"><i class="fa-solid fa-share-alt"></i></button>
                         <button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
@@ -88,7 +86,8 @@ function renderItems(items, container, context) {
     container.querySelectorAll('.share-button').forEach(b => b.addEventListener('click', (e) => {
         e.stopPropagation();
         const name = e.currentTarget.dataset.name;
-        shareItem(name);
+        const itemId = e.currentTarget.dataset.itemId;
+        shareItem(name, itemId);
     }));
     container.querySelectorAll('.item-card').forEach(c => c.addEventListener('click', (e) => {
         if(e.target.closest('button')) return; // ignore clicks on buttons
@@ -128,12 +127,14 @@ async function handleLikeClick(event) {
     }
 }
 
-function shareItem(itemName) {
+function shareItem(itemName, itemId) {
     if (navigator.share) {
+        const baseUrl = window.location.href.split('?')[0];
+        const shareUrl = `${baseUrl}?itemId=${itemId}`;
         navigator.share({
             title: 'Check out this item on StreetR!',
             text: `I found this delicious ${itemName} on the StreetR app!`,
-            url: window.location.href,
+            url: shareUrl,
         }).catch(console.error);
     } else {
         alert("Sharing is not supported on your browser.");
@@ -171,6 +172,7 @@ async function showItemDetailPage(itemId) {
                 <p class="item-description">${item.description || 'No description available.'}</p>
                 <div class="item-detail-actions">
                      <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Like</button>
+                     <button id="detail-share-btn" class="like-button-large"><i class="fa-solid fa-share-alt"></i> Share</button>
                      <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                 </div>
                  <div class="more-from-shop">
@@ -187,6 +189,9 @@ async function showItemDetailPage(itemId) {
             addToCart(item);
             launchConfetti();
         });
+        itemDetailPage.querySelector('#detail-share-btn').addEventListener('click', () => {
+            shareItem(item.name, item.id);
+        });
 
         navigateToPage('item-detail-page');
     } catch (error) {
@@ -196,4 +201,3 @@ async function showItemDetailPage(itemId) {
         hideLoader();
     }
 }
-
