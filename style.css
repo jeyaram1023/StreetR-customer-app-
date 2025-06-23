@@ -711,6 +711,46 @@ button:hover {
     z-index: 999; /* மேலேயா காட்டும் */
 }
 
+/* Style for unavailable item cards */
+.item-card.unavailable {
+    background-color: #d3d3d3; /* Light gray to indicate it's disabled */
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none;
+}
+
+/* Prevent hover effects on unavailable items */
+.item-card.unavailable:hover {
+    transform: none;
+}
+
+/* Overlay on top of the item image */
+.unavailable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px; /* match image height */
+    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    z-index: 2;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Container around image must be relative to hold overlay */
+.item-image-container {
+    position: relative;
+}
+
 
 /* Helper classes */
 .hidden {
