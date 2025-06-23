@@ -687,33 +687,28 @@ button:hover {
     margin-top: 20px;
 }
 
-/* place oder button in Cart page*/
-
 #place-order-button {
     background-color: #20B2AA;
     color: var(--primary-white);
     padding: 14px 20px;
     border: none;
-    border-radius: 20px;
+    border-radius: var(--border-radius);
     font-size: 1.1em;
     font-weight: bold;
-    width: calc(100% - 40px);
-    margin: 0 auto;
+    width: calc(100% - 30px); /* Left & right padding */
+    margin: 0 auto; /* center align */
 
-    /* Floating settings */
+    /* 👇 Fixed to bottom */
     position: fixed;
-    bottom: 100px; /* 🔼 place it higher from the footer */
+    bottom: 20px; /* Footerக்கு மேல 20px gap */
     left: 0;
     right: 0;
-    z-index: 999;
 
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    z-index: 999; /* மேலேயா காட்டும் */
 }
 
-#place-order-button:active {
-    transform: scale(0.96);
-}
+
 /* Helper classes */
 .hidden {
     display: none !important;
