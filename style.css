@@ -701,7 +701,7 @@ button:hover {
     margin: 0 auto;
 
     /* Floating effect */
-    position: fixed;
+    position: Floating;
     bottom: 80px; /* 🔼 Increased from 20px → 80px (higher float) */
     left: 0;
     right: 0;
