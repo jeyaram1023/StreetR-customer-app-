@@ -702,7 +702,7 @@ button:hover {
     margin: 0 auto; /* center align */
 
     /* 👇 Fixed to bottom */
-    position: fixed;
+    position: static;
     bottom: 20px; /* Footerக்கு மேல 20px gap */
     left: 0;
     right: 0;
@@ -711,28 +711,7 @@ button:hover {
     z-index: 999; /* மேலேயா காட்டும் */
 }
 
-/* Style for unavailable item cards */
-.item-card.unavailable {
-    position: relative;
-    opacity: 0.6; /* Example: make it slightly dim */
-    pointer-events: none; /* Example: prevent clicks on the card itself */
-}
 
-.unavailable-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Example: semi-transparent dark overlay */
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.2em;
-    z-index: 1; /* Ensure it's above the image */
-}
 
 
 /* Helper classes */
