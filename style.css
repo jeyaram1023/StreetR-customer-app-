@@ -315,76 +315,116 @@ button:hover {
     margin-top: 15px;
 }
 
+/* Grid Layout */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+  padding: 0 10px;
+}
+
+/* Card Styles */
 .item-card, .shop-card {
-    background: var(--primary-white);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    text-align: left;
-    box-shadow: var(--soft-shadow);
-    cursor: pointer;
+  background: var(--primary-white);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  text-align: left;
+  box-shadow: var(--soft-shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  position: relative;
 }
 
 .item-card:hover {
-    transform: translateY(-5px);
+  transform: translateY(-6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
+/* Card Image */
 .item-card img, .shop-card img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
 }
 
+/* Content Area */
 .item-card-content, .shop-card-content {
-    padding: 10px;
+  padding: 12px 14px;
 }
 
+/* Titles & Price */
 .item-card h4 {
-    font-size: 1em;
-    margin-bottom: 4px;
+  font-size: 1.05em;
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--text-dark);
 }
 
 .item-card p {
-    font-size: 0.9em;
-    color: var(--text-dark);
-    font-weight: bold;
-    margin-bottom: 8px;
+  font-size: 0.92em;
+  color: var(--text-dark);
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
+/* Footer: Like, Cart, Share */
 .item-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
 }
 
+/* Like Button */
 .like-button {
-    background: none;
-    border: none;
-    font-size: 1.3em;
-    cursor: pointer;
-    color: var(--text-light);
+  background: none;
+  border: none;
+  font-size: 1.4em;
+  color: var(--text-light);
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.like-button:hover {
+  transform: scale(1.2);
 }
 
 .like-button.liked {
-    color: var(--primary-orange);
+  color: var(--primary-orange);
 }
 
+/* Add to Cart Button */
 .add-to-cart-btn {
-    background-color: var(--primary-orange);
-    color: white;
-    border:none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: 1.2em;
-    line-height: 32px;
-    text-align: center;
+  background-color: var(--primary-orange);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2em;
+  line-height: 36px;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
+.add-to-cart-btn:hover {
+  background-color: #e55d00;
+  transform: scale(1.1);
+}
+/* Share Button */
 .share-button {
-    background: none;
-    border: none;
-    font-size: 1.2em;
-    color: var(--text-light);
+  background: none;
+  border: none;
+  font-size: 1.3em;
+  color: var(--text-light);
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.share-button:hover {
+  color: var(--primary-orange);
+  transform: rotate(10deg);
 }
 
 /* Search Page */
