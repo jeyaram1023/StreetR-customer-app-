@@ -1,5 +1,4 @@
-//js_home.js
-
+// js_home.js
 const popularItemsContainer = document.getElementById('popular-items-container');
 const allItemsContainer = document.getElementById('all-items-container');
 const itemDetailPage = document.getElementById('item-detail-page');
@@ -21,7 +20,6 @@ async function loadHomePageContent() {
         const sellerIds = sellers.map(s => s.id);
         if (sellerIds.length === 0) {
             allItemsContainer.innerHTML = '<p>No sellers found in your area yet.</p>';
-            hideLoader();
             return;
         }
 
@@ -31,23 +29,11 @@ async function loadHomePageContent() {
                 p_user_id: window.currentUser.id
             });
         if (itemsError) throw itemsError;
-
-        // Sort items: available items first, then unavailable items
-        const sortedItems = [...items].sort((a, b) => {
-            if (a.is_available && !b.is_available) return -1;
-            if (!a.is_available && b.is_available) return 1;
-            return 0;
-        });
-
-        // Popular items should only be available items
-        const popularItems = [...items]
-            .filter(item => item.is_available)
-            .sort((a, b) => b.like_count - a.like_count)
-            .slice(0, 4);
+        
+        const popularItems = [...items].sort((a, b) => b.like_count - a.like_count).slice(0, 4);
 
         renderItems(popularItems, popularItemsContainer, 'popular');
-        renderItems(sortedItems, allItemsContainer, 'all');
-
+        renderItems(items, allItemsContainer, 'all');
     } catch (error) {
         console.error('Error loading home page:', error);
         allItemsContainer.innerHTML = '<p>Could not load items. Please try again.</p>';
@@ -59,26 +45,15 @@ async function loadHomePageContent() {
 function renderItems(items, container, context) {
     container.innerHTML = '';
     if (!items || items.length === 0) {
-        if (context === 'all') {
-            container.innerHTML = '<p>No items to display in your area.</p>';
-        }
+        if (context === 'all') container.innerHTML = '<p>No items to display in your area.</p>';
         return;
     }
     items.forEach(item => {
         const itemCard = document.createElement('div');
-        // Add 'unavailable' class if item is not available
-        itemCard.className = `item-card ${!item.is_available ? 'unavailable' : ''}`;
+        itemCard.className = 'item-card';
         itemCard.dataset.itemId = item.id;
-
-        const availabilityText = !item.is_available ? '<div class="unavailable-overlay"><p>Not Available</p></div>' : '';
-        const addToCartButton = item.is_available ? `<button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>` : '';
-
-
         itemCard.innerHTML = `
-            <div class="item-image-container">
-                ${availabilityText}
-                <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
-            </div>
+            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
             <div class="item-card-content">
                 <h4>${item.name}</h4>
                 <p>₹${item.price.toFixed(2)}</p>
@@ -90,8 +65,8 @@ function renderItems(items, container, context) {
                         <span class="like-count">${item.like_count}</span>
                     </div>
                     <div>
-                        <button class="share-button" data-name="${item.name}"><i class="fa-solid fa-share-alt"></i></button>
-                        ${addToCartButton}
+                        <button class="share-button" data-name="${item.name}" data-item-id="${item.id}"><i class="fa-solid fa-share-alt"></i></button>
+                        <button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
             </div>
@@ -101,52 +76,35 @@ function renderItems(items, container, context) {
 
     // Add event listeners
     container.querySelectorAll('.like-button').forEach(b => b.addEventListener('click', handleLikeClick));
-
-    container.querySelectorAll('.add-to-cart-btn').forEach(b => {
-        b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const itemId = e.currentTarget.dataset.itemId;
-            const item = items.find(i => i.id === itemId);
-            if (item) {
-                addToCart(item);
-                launchConfetti();
-            }
-        });
-    });
-
-    container.querySelectorAll('.share-button').forEach(b => {
-        b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const name = e.currentTarget.dataset.name;
-            shareItem(name);
-        });
-    });
-
-    container.querySelectorAll('.item-card').forEach(c => {
-        c.addEventListener('click', (e) => {
-            if (e.target.closest('button')) return; // ignore clicks on buttons
-            const itemId = c.dataset.itemId;
-            const item = items.find(i => i.id === itemId);
-            if (item && item.is_available) { // Only show details for available items
-                showItemDetailPage(itemId);
-            }
-        });
-    });
+    container.querySelectorAll('.add-to-cart-btn').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const itemId = e.currentTarget.dataset.itemId;
+        const item = items.find(i => i.id === itemId);
+        addToCart(item);
+        launchConfetti();
+    }));
+    container.querySelectorAll('.share-button').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = e.currentTarget.dataset.name;
+        const itemId = e.currentTarget.dataset.itemId;
+        shareItem(name, itemId);
+    }));
+    container.querySelectorAll('.item-card').forEach(c => c.addEventListener('click', (e) => {
+        if(e.target.closest('button')) return; // ignore clicks on buttons
+        const itemId = c.dataset.itemId;
+        showItemDetailPage(itemId);
+    }));
 }
-
 
 async function handleLikeClick(event) {
     event.stopPropagation();
-    if (!window.currentUser) {
-        alert("Please log in to like items.");
-        return;
-    }
+    if (!window.currentUser) { alert("Please log in to like items."); return; }
 
     const button = event.currentTarget;
     const itemId = button.dataset.itemId;
     const isLiked = button.dataset.liked === 'true';
     const icon = button.querySelector('i');
-
+    
     // Optimistic UI update
     button.classList.toggle('liked', !isLiked);
     button.dataset.liked = !isLiked;
@@ -154,17 +112,11 @@ async function handleLikeClick(event) {
 
     try {
         if (isLiked) {
-            await supabase.from('likes').delete().match({
-                user_id: window.currentUser.id,
-                menu_item_id: itemId
-            });
+            await supabase.from('likes').delete().match({ user_id: window.currentUser.id, menu_item_id: itemId });
         } else {
-            await supabase.from('likes').insert({
-                user_id: window.currentUser.id,
-                menu_item_id: itemId
-            });
+            await supabase.from('likes').insert({ user_id: window.currentUser.id, menu_item_id: itemId });
         }
-        // Reload content to update like counts everywhere
+        // Optionally reload content to update like counts everywhere
         loadHomePageContent();
     } catch (error) {
         console.error("Error updating like:", error);
@@ -175,12 +127,14 @@ async function handleLikeClick(event) {
     }
 }
 
-function shareItem(itemName) {
+function shareItem(itemName, itemId) {
     if (navigator.share) {
+        const baseUrl = window.location.href.split('?')[0];
+        const shareUrl = `${baseUrl}?itemId=${itemId}`;
         navigator.share({
             title: 'Check out this item on StreetR!',
             text: `I found this delicious ${itemName} on the StreetR app!`,
-            url: window.location.href,
+            url: shareUrl,
         }).catch(console.error);
     } else {
         alert("Sharing is not supported on your browser.");
@@ -190,10 +144,7 @@ function shareItem(itemName) {
 async function showItemDetailPage(itemId) {
     showLoader();
     try {
-        const {
-            data: item,
-            error
-        } = await supabase
+        const { data: item, error } = await supabase
             .from('menu_items')
             .select(`*, seller:profiles(shop_name)`)
             .eq('id', itemId)
@@ -201,17 +152,13 @@ async function showItemDetailPage(itemId) {
         if (error) throw error;
 
         // Fetch other items from the same seller
-        const {
-            data: otherItems,
-            error: otherItemsError
-        } = await supabase
+        const { data: otherItems, error: otherItemsError } = await supabase
             .from('menu_items')
             .select(`*`)
             .eq('seller_id', item.seller_id)
-            .eq('is_available', true) // Only show other available items
             .neq('id', item.id) // Exclude the current item
             .limit(5);
-        if (otherItemsError) throw otherItemsError;
+        if(otherItemsError) throw otherItemsError;
 
         itemDetailPage.innerHTML = `
             <div class="item-detail-header">
@@ -225,6 +172,7 @@ async function showItemDetailPage(itemId) {
                 <p class="item-description">${item.description || 'No description available.'}</p>
                 <div class="item-detail-actions">
                      <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Like</button>
+                     <button id="detail-share-btn" class="like-button-large"><i class="fa-solid fa-share-alt"></i> Share</button>
                      <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                 </div>
                  <div class="more-from-shop">
@@ -235,11 +183,14 @@ async function showItemDetailPage(itemId) {
         `;
 
         renderItems(otherItems, itemDetailPage.querySelector('#more-items-container'), 'more');
-
+        
         itemDetailPage.querySelector('#back-to-home-btn').addEventListener('click', () => navigateToPage('main-app-view', 'home-page-content'));
         itemDetailPage.querySelector('#detail-add-to-cart-btn').addEventListener('click', () => {
             addToCart(item);
             launchConfetti();
+        });
+        itemDetailPage.querySelector('#detail-share-btn').addEventListener('click', () => {
+            shareItem(item.name, item.id);
         });
 
         navigateToPage('item-detail-page');
