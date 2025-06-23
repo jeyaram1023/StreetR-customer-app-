@@ -21,6 +21,16 @@ function hideLoader() {
     document.getElementById('loading-modal').classList.add('hidden');
 }
 
+function handleTabChange(activeTabId) {
+    if (activeTabId === 'cart-page-content') {
+        // Show the floating button
+        document.getElementById('place-order-button').style.display = 'block';
+    } else {
+        // Hide on other tabs
+        document.getElementById('place-order-button').style.display = 'none';
+    }
+}
+
 // --- NAVIGATION ---
 function navigateToPage(pageId, tabContentId = null) {
     pages.forEach(page => page.classList.remove('active'));
