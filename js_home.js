@@ -64,7 +64,6 @@ function renderItems(items, container, context) {
                             <span class="like-count">${item.like_count}</span>
   
                         </button>
-                        <span class="like-count">${item.like_count}</span>
                     </div>
                     <div>
                         <button class="share-button" data-name="${item.name}" data-item-id="${item.id}"><i class="fa-solid fa-share-alt"></i></button>
@@ -174,11 +173,13 @@ async function showItemDetailPage(itemId) {
                 <p class="item-description">${item.description || 'No description available.'}</p>
                 <div class="item-detail-actions">
                      <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Likes 
-                     <span class="like-count">${item.like_count}</span>
+                     <span class="like-count">${item.like_count ?? 0}</span>
   
                      </button>
                      <button id="detail-share-btn" class="like-button-large"><i class="fa-solid fa-share-alt"></i> Share</button>
                      <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+
+
                 </div>
                  <div class="more-from-shop">
                     <h3>More from ${item.seller.shop_name}</h3>
