@@ -417,16 +417,19 @@ button:hover {
   background-color: var(--primary-orange);
   color: white;
   border: none;
-  border-radius: 25%;
-  width: 100px;             /* 🔼 was 36px */
-  height: 48px;            /* 🔼 was 36px */
-  font-size: 1.5em;        /* 🔼 was 1.2em */
-  line-height: 60px;       /* 🔼 match height */
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  width: 100%;
+  height: 44px;
+  font-size: 1em;
+  font-weight: bold;
   text-align: center;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-/* Share Button */
+  line-height: 44px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  /* Removed transition & hover effects */
+}/* Share Button */
 .share-button {
     background: none;
     border: none;
