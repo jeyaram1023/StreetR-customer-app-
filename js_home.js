@@ -172,7 +172,7 @@ async function showItemDetailPage(itemId) {
                 <p class="shop-name">From: ${item.seller.shop_name}</p>
                 <p class="item-price">₹${item.price.toFixed(2)}</p>
                 <p class="item-description">${item.description || 'No description available.'}</p>
-                <p>❤️ <span class="like-count">${item.like_count ?? 0}</span> </p><span class="like-count">${item.like_count}</span>
+                <p>❤️ class="like-count">${item.like_count}</p><span class="like-count">${item.like_count}</span>
                 <div class="item-detail-actions">
                      <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Likes 
                      <span class="like-count">${item.like_count ?? 0}</span>
