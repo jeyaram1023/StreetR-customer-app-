@@ -326,13 +326,19 @@ button:hover {
 
 /* Item and Shop Cards */
 .item-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    margin-top: 20px;
-    padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Default: 2 columns */
+  gap: 16px;
+  margin-top: 20px;
+  padding: 0 10px;
 }
 
+/* 📱 Mobile View: 1 column */
+@media (max-width: 600px) {
+  .item-grid {
+    grid-template-columns: 1fr;
+  }
+}
 /* Card Styles */
 .item-card,
 .shop-card {
