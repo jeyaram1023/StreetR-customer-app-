@@ -58,7 +58,7 @@ function renderItems(items, container, context) {
                 <h4>${item.name}</h4>
                 <p>₹${item.price.toFixed(2)}</p>
                 <div class="item-card-footer">
-                <p>❤️  </p><span class="like-count">${item.like_count}</span>
+                
                     <div>
                         <button class="like-button ${item.is_liked_by_user ? 'liked' : ''}" data-item-id="${item.id}" data-liked="${item.is_liked_by_user}">
                             <i class="fa-${item.is_liked_by_user ? 'solid' : 'regular'} fa-heart"></i>
@@ -172,7 +172,7 @@ async function showItemDetailPage(itemId) {
                 <p class="shop-name">From: ${item.seller.shop_name}</p>
                 <p class="item-price">₹${item.price.toFixed(2)}</p>
                 <p class="item-description">${item.description || 'No description available.'}</p>
-                <p>❤️  </p><span class="like-count">${item.like_count}</span>
+                <p>❤️ <span class="like-count">${item.like_count ?? 0}</span> </p><span class="like-count">${item.like_count}</span>
                 <div class="item-detail-actions">
                      <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Likes 
                      <span class="like-count">${item.like_count ?? 0}</span>
