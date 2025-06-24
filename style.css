@@ -414,27 +414,17 @@ button:hover {
 
 /* Add to Cart Button */
 .add-to-cart-btn {
-  background-color: #ffffff;            /* White button */
-  color: var(--primary-orange);         /* Orange icon */
-  border: 2px solid var(--primary-orange);
+  background-color: var(--primary-orange);
+  color: white;
+  border: none;
   border-radius: 50%;
-  width: 56px;                          /* ✅ Bigger size */
-  height: 56px;
-  font-size: 1.8em;
-  line-height: 56px;
+  width: 48px;             /* 🔼 was 36px */
+  height: 48px;            /* 🔼 was 36px */
+  font-size: 1.5em;        /* 🔼 was 1.2em */
+  line-height: 48px;       /* 🔼 match height */
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  position: fixed;                     /* ✅ Fixed on screen */
-  bottom: 80px;                        /* 👇 Above bottom nav bar */
-  right: 20px;
-  z-index: 1000;
-}
-
-/* Hover or active effect */
-.add-to-cart-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 /* Share Button */
 .share-button {
