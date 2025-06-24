@@ -417,11 +417,11 @@ button:hover {
   background-color: var(--primary-orange);
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 48px;             /* 🔼 was 36px */
+  border-radius: 25%;
+  width: 100px;             /* 🔼 was 36px */
   height: 48px;            /* 🔼 was 36px */
   font-size: 1.5em;        /* 🔼 was 1.2em */
-  line-height: 48px;       /* 🔼 match height */
+  line-height: 60px;       /* 🔼 match height */
   text-align: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
