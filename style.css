@@ -21,7 +21,8 @@
 }
 
 /* MODIFIED: Added html, body height and overflow control */
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -36,16 +37,19 @@ html, body {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    min-height: 100dvh; /* Use dynamic viewport height */
+    min-height: 100dvh;
+    /* Use dynamic viewport height */
     max-height: 100dvh; /* Added to constrain height */
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     background-color: var(--primary-white);
     position: relative;
     overflow: hidden; /* Changed from overflow: hidden to ensure consistency */
 }
 
 /* Transitions */
-button, .item-card, .shop-card {
+button,
+.item-card,
+.shop-card {
     transition: all 0.3s ease;
 }
 
@@ -55,7 +59,8 @@ button:active {
 
 /* Header & Footer */
 .app-header {
-    position: fixed;                /* Floating at the top */
+    position: fixed;
+    /* Floating at the top */
     top: 0;
     left: 0;
     right: 0;
@@ -70,7 +75,7 @@ button:active {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Header Title on the👇🏻👆🏻 Left */
+/* Header Title on the Left */
 .header-title {
     font-size: 1.3em;
     font-weight: 600;
@@ -79,9 +84,10 @@ button:active {
 
 /* Icons Container on the Right */
 .header-icons {
-    display: flex;              /* Align icons horizontally */
+    display: flex; /* Align icons horizontally */
     align-items: center;
-    gap: 10px;                  /* Space between icons */
+    gap: 10px;
+    /* Space between icons */
 }
 
 /* Individual Icon Buttons */
@@ -112,21 +118,28 @@ button:active {
 }
 
 /* Page Default State */
-.page, .tab-content {
+.page,
+.tab-content {
     display: none;
     flex-direction: column;
 }
 
 /* Page Visible when Active */
-.page.active, .tab-content.active {
+.page.active,
+.tab-content.active {
     display: flex;
     animation: fadeIn 0.4s ease;
 }
 
 /* Fade In Animation */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Page Title/Header */
@@ -156,7 +169,10 @@ button:active {
 }
 
 /* Forms & Buttons */
-input[type="email"], input[type="text"], input[type="tel"], select {
+input[type="email"],
+input[type="text"],
+input[type="tel"],
+select {
     width: 100%;
     padding: 14px;
     margin-bottom: 16px;
@@ -207,7 +223,8 @@ button:hover {
     position: fixed;
     bottom: 20px; /* float above bottom */
     left: 50%;
-    transform: translateX(-50%); /* center horizontally */
+    transform: translateX(-50%);
+    /* center horizontally */
     background-color: var(--primary-orange);
     color: var(--primary-white);
     padding: 10px 20px;
@@ -218,7 +235,8 @@ button:hover {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     width: 90%;
-    max-width: 400px; /* responsive on large screens */
+    max-width: 400px;
+    /* responsive on large screens */
 }
 
 .nav-item {
@@ -248,7 +266,6 @@ button:hover {
 }
 
 /* --- END OF BOTTOM NAVIGATION BAR FIX --- */
-
 /* More Menu Popup */
 .more-menu-popup {
     position: fixed;
@@ -310,121 +327,117 @@ button:hover {
 /* Item and Shop Cards */
 .item-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-
-/* Grid Layout */
-.item-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-  padding: 0 10px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    padding: 0 10px;
 }
 
 /* Card Styles */
-.item-card, .shop-card {
-  background: var(--primary-white);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  text-align: left;
-  box-shadow: var(--soft-shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  cursor: pointer;
-  position: relative;
+.item-card,
+.shop-card {
+    background: var(--primary-white);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    text-align: left;
+    box-shadow: var(--soft-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    position: relative;
 }
 
 .item-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Card Image */
-.item-card img, .shop-card img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  display: block;
+.item-card img,
+.shop-card img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block;
 }
 
 /* Content Area */
-.item-card-content, .shop-card-content {
-  padding: 12px 14px;
+.item-card-content,
+.shop-card-content {
+    padding: 12px 14px;
 }
 
 /* Titles & Price */
 .item-card h4 {
-  font-size: 1.05em;
-  margin: 0 0 6px;
-  font-weight: 600;
-  color: var(--text-dark);
+    font-size: 1.05em;
+    margin: 0 0 6px;
+    font-weight: 600;
+    color: var(--text-dark);
 }
 
 .item-card p {
-  font-size: 0.92em;
-  color: var(--text-dark);
-  font-weight: bold;
-  margin-bottom: 10px;
+    font-size: 0.92em;
+    color: var(--text-dark);
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 /* Footer: Like, Cart, Share */
 .item-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
 }
 
 /* Like Button */
 .like-button {
-  background: none;
-  border: none;
-  font-size: 1.4em;
-  color: var(--text-light);
-  transition: color 0.3s ease, transform 0.2s ease;
+    background: none;
+    border: none;
+    font-size: 1.4em;
+    color: var(--text-light);
+    transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .like-button:hover {
-  transform: scale(1.2);
+    transform: scale(1.2);
 }
 
 .like-button.liked {
-  color: var(--primary-orange);
+    color: var(--primary-orange);
 }
 
 /* Add to Cart Button */
 .add-to-cart-btn {
-  background-color: var(--primary-orange);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 1.2em;
-  line-height: 36px;
-  text-align: center;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: var(--primary-orange);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2em;
+    line-height: 36px;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .add-to-cart-btn:hover {
-  background-color: #e55d00;
-  transform: scale(1.1);
+    background-color: #e55d00;
+    transform: scale(1.1);
 }
+
 /* Share Button */
 .share-button {
-  background: none;
-  border: none;
-  font-size: 1.3em;
-  color: var(--text-light);
-  transition: color 0.3s ease, transform 0.2s ease;
+    background: none;
+    border: none;
+    font-size: 1.3em;
+    color: var(--text-light);
+    transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .share-button:hover {
-  color: var(--primary-orange);
-  transform: rotate(10deg);
+    color: var(--primary-orange);
+    transform: rotate(10deg);
 }
 
 /* Search Page */
@@ -520,7 +533,7 @@ button:hover {
     border-radius: 50%;
     font-size: 1.8em;
     z-index: 101;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Cart Page */
@@ -577,11 +590,14 @@ button:hover {
     color: var(--text-dark);
     border-radius: 50%;
     font-size: 1em;
-    display: flex;               /* Add this */
-    align-items: center;        /* Center vertically */
-    justify-content: center;    /* Center horizontally */
-    padding: 0;                 /* Remove any default padding */
+    display: flex;
+    /* Add this */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    padding: 0;
+    /* Remove any default padding */
 }
+
 .quantity-controls span {
     font-weight: bold;
 }
@@ -648,7 +664,7 @@ button:hover {
     max-width: 400px;
     background: white;
     border-radius: var(--border-radius);
-    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
     z-index: 1500;
     overflow: hidden;
 }
@@ -666,7 +682,7 @@ button:hover {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
     border-radius: 50%;
@@ -712,8 +728,15 @@ button:hover {
 }
 
 @keyframes confetti-fall {
-    0% { transform: translateY(-100px) rotateZ(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
+    0% {
+        transform: translateY(-100px) rotateZ(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotateZ(720deg);
+        opacity: 0;
+    }
 }
 
 /* QR Scanner Page */
@@ -739,20 +762,17 @@ button:hover {
     font-size: 1.1em;
     font-weight: bold;
     width: calc(100% - 30px); /* Left & right padding */
-    margin: 0 auto; /* center align */
-
+    margin: 0 auto;
+    /* center align */
     /* 👇 Fixed to bottom */
     position: static;
-    bottom: 20px; /* Footerக்கு மேல 20px gap */
+    bottom: 20px;
     left: 0;
     right: 0;
-
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    z-index: 999; /* மேலேயா காட்டும் */
+    z-index: 999;
+    /* மே லே யா கா */
 }
-
-
-
 
 /* Helper classes */
 .hidden {
