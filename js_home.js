@@ -61,6 +61,8 @@ function renderItems(items, container, context) {
                     <div>
                         <button class="like-button ${item.is_liked_by_user ? 'liked' : ''}" data-item-id="${item.id}" data-liked="${item.is_liked_by_user}">
                             <i class="fa-${item.is_liked_by_user ? 'solid' : 'regular'} fa-heart"></i>
+                            <span class="like-count">${item.like_count}</span>
+  
                         </button>
                         <span class="like-count">${item.like_count}</span>
                     </div>
@@ -171,7 +173,10 @@ async function showItemDetailPage(itemId) {
                 <p class="item-price">₹${item.price.toFixed(2)}</p>
                 <p class="item-description">${item.description || 'No description available.'}</p>
                 <div class="item-detail-actions">
-                     <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Like</button>
+                     <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Likes 
+                     <span class="like-count">${item.like_count}</span>
+  
+                     </button>
                      <button id="detail-share-btn" class="like-button-large"><i class="fa-solid fa-share-alt"></i> Share</button>
                      <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                 </div>
