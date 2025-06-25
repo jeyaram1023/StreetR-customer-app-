@@ -776,6 +776,55 @@ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     /* மே லே யா கா */
 }
 
+/* --- Profile Page Styles --- */
+#profile-page-content {
+    gap: 20px;
+}
+
+.profile-field {
+    margin-bottom: 15px;
+}
+
+.profile-field label {
+    font-weight: bold;
+    color: var(--text-light);
+    font-size: 0.9em;
+}
+
+.profile-field p {
+    font-size: 1.1em;
+    color: var(--text-dark);
+    margin-top: 4px;
+    padding: 10px;
+    background-color: var(--background-grey);
+    border-radius: 8px;
+}
+
+#profile-edit-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+#profile-edit-form input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.profile-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-actions .button-danger {
+    margin-top: 10px;
+}
+
+
 /* Helper classes */
 .hidden {
     display: none !important;
