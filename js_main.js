@@ -1,5 +1,3 @@
-// js_main.js (FIXED & Corrected)
-
 // Global state variables
 window.currentUser = null;
 window.userProfile = null;
@@ -23,20 +21,14 @@ function hideLoader() {
     document.getElementById('loading-modal').classList.add('hidden');
 }
 
+
 // --- NAVIGATION ---
 function navigateToPage(pageId, tabContentId = null) {
     pages.forEach(page => page.classList.remove('active'));
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    }
+    document.getElementById(pageId)?.classList.add('active');
 
-    const isPreAuthPage = pageId === 'login-page' || pageId === 'profile-setup-page';
     const isMainView = pageId === 'main-app-view';
-
-    // Show header for all pages except the login/profile setup pages
-    appHeader.style.display = isPreAuthPage ? 'none' : 'flex';
-    // Show bottom nav only for the main tabbed view
+    appHeader.style.display = isMainView ? 'flex' : 'none';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
 
     // Manage footer visibility for cart's sticky button
@@ -47,12 +39,7 @@ function navigateToPage(pageId, tabContentId = null) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
-
-        const activeTab = document.getElementById(activeTabId);
-        if(activeTab) {
-            activeTab.classList.add('active');
-        }
-
+        document.getElementById(activeTabId)?.classList.add('active');
         const activeNavButton = bottomNav.querySelector(`[data-page="${activeTabId}"]`);
         if (activeNavButton) {
             activeNavButton.classList.add('active');
@@ -60,7 +47,6 @@ function navigateToPage(pageId, tabContentId = null) {
         handleTabChange(activeTabId);
     }
 }
-
 
 function handleTabChange(activeTabId) {
     if (activeTabId === 'cart-page-content') {
@@ -86,7 +72,7 @@ function handleTabChange(activeTabId) {
     }
 }
 
-// --- AUTHENTICATION FLOW ---
+// --- AUTHENTICATION FLOW (THE FIX) ---
 async function fetchProfile(userId) {
     const {
         data,
@@ -106,14 +92,15 @@ async function fetchProfile(userId) {
 async function handleUserSession(session) {
     window.currentUser = session.user;
     const profile = await fetchProfile(session.user.id);
-    if (profile && profile.full_name) {
+
+    if (profile && profile.full_name) { // Profile is complete
         window.userProfile = profile;
         navigateToPage('main-app-view');
-        showPopUpNotifications();
-    } else if (profile) {
+        showPopUpNotifications(); // Show popups on successful login to main app
+    } else if (profile) { // Profile exists but is incomplete
         window.userProfile = profile;
         navigateToPage('profile-setup-page');
-    } else {
+    } else { // Profile does not exist (should be rare with the trigger)
         navigateToPage('profile-setup-page');
     }
 }
@@ -139,7 +126,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     } else if (event === 'SIGNED_OUT') {
         window.currentUser = null;
         window.userProfile = null;
-        localStorage.clear();
+        localStorage.clear(); // Clear all data on logout
         navigateToPage('login-page');
     }
 });
@@ -160,11 +147,13 @@ function launchConfetti() {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+    // New More Menu Elements
     const moreNavButton = document.getElementById('more-nav-button');
     const moreMenuPopup = document.getElementById('more-menu-popup');
     const closeMoreMenuBtn = document.getElementById('close-more-menu-btn');
     const moreMenuOverlay = document.querySelector('.more-menu-overlay');
 
+    // Nav item clicks
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetTabId = item.getAttribute('data-page');
@@ -174,28 +163,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Header button clicks
     searchPageButton?.addEventListener('click', () => navigateToPage('search-page'));
     likesPageButton?.addEventListener('click', () => {
         navigateToPage('likes-page');
         loadLikedItems();
     });
-
+    
+    // Generic back to home button clicks
     document.querySelectorAll('.back-to-home-btn').forEach(button => {
         button.addEventListener('click', () => {
             navigateToPage('main-app-view', 'home-page-content');
         });
     });
 
+    // More Menu button click
     moreNavButton?.addEventListener('click', (e) => {
         e.stopPropagation();
         moreMenuPopup.classList.remove('hidden');
     });
 
+    // Close More Menu
     const closeMoreMenu = () => {
         moreMenuPopup.classList.add('hidden');
     };
+
     closeMoreMenuBtn?.addEventListener('click', closeMoreMenu);
     moreMenuOverlay?.addEventListener('click', closeMoreMenu);
 
+
+    // Initial auth check
     checkAuthState();
 });
