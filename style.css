@@ -824,59 +824,75 @@ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     margin-top: 10px;
 }
 
-
 /* --- Item Detail Page Styles --- */
 .item-detail-content {
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 16px;
     text-align: left;
+    background-color: var(--primary-white);
+    border-radius: 12px;
+    box-shadow: var(--soft-shadow);
+    margin: 10px;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .item-detail-image {
     width: 100%;
-    height: 250px;
+    height: auto;
+    max-height: 260px;
     object-fit: cover;
     border-radius: var(--border-radius);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     box-shadow: var(--soft-shadow);
+    transition: transform 0.3s;
+}
+
+.item-detail-image:hover {
+    transform: scale(1.02);
 }
 
 .item-detail-content h2 {
-    font-size: 1.8em;
-    font-weight: bold;
+    font-size: 1.9em;
+    font-weight: 700;
     color: var(--text-dark);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    line-height: 1.2;
 }
 
 .item-detail-content .shop-name {
     font-size: 1em;
+    font-weight: 500;
     color: var(--text-light);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .item-detail-content .item-price {
-    font-size: 1.5em;
-    font-weight: bold;
+    font-size: 1.6em;
+    font-weight: 700;
     color: var(--primary-orange);
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .item-detail-content .item-description {
     font-size: 1em;
     color: var(--text-dark);
     line-height: 1.6;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
 }
 
 .item-detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 25px;
 }
 
 .add-to-cart-large {
     width: 100%;
-    padding: 15px;
-    font-size: 1.2em;
+    padding: 14px 20px;
+    font-size: 1.1em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -887,19 +903,33 @@ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     border-radius: var(--border-radius);
     cursor: pointer;
     font-weight: bold;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.add-to-cart-large:hover {
+    background-color: #ff6300;
+    transform: scale(1.02);
 }
 
 .more-from-shop {
-    margin-top: 20px;
+    margin-top: 30px;
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
+    background: #f9f9f9;
+    border-radius: 12px;
 }
 
 .more-from-shop h3 {
-    font-size: 1.2em;
-    font-weight: bold;
+    font-size: 1.3em;
+    font-weight: 600;
     margin-bottom: 15px;
     color: var(--text-dark);
+}
+
+/* Optional: Smooth fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 
