@@ -137,14 +137,73 @@
                 <div id="map-page-content" class="tab-content">
                     <div id="map-container"></div>
                 </div>
-                <div id="profile-page-content" class="tab-content">
-                    <h3>Your Profile</h3>
-                    <div id="profile-details-view"></div>
-                    <button id="profile-edit-button" class="button-outline">Edit Profile</button>
-                    <button id="help-button" class="button-outline">Help</button>
-                    <button id="logout-button" class="button-danger">Logout</button>
-                </div>
-            </div>
+               <div id="profile-page-content" class="tab-content">
+    <h3>Your Profile</h3>
+
+    <div id="profile-details-view">
+        <div class="profile-field">
+            <label>Full Name:</label>
+            <p id="profile-display-name"></p>
+        </div>
+        <div class="profile-field">
+            <label>Mobile Number:</label>
+            <p id="profile-display-mobile"></p>
+        </div>
+        <div class="profile-field">
+            <label>Street Name / House No:</label>
+            <p id="profile-display-street"></p>
+        </div>
+        <div class="profile-field">
+            <label>Nearby Landmark:</label>
+            <p id="profile-display-landmark"></p>
+        </div>
+        <div class="profile-field">
+            <label>District:</label>
+            <p id="profile-display-district"></p>
+        </div>
+        <div class="profile-field">
+            <label>State:</label>
+            <p id="profile-display-state"></p>
+        </div>
+        <div class="profile-field">
+            <label>Pincode:</label>
+            <p id="profile-display-pincode"></p>
+        </div>
+    </div>
+
+    <form id="profile-edit-form" class="hidden">
+        <label for="edit-customer-name">Full Name:</label>
+        <input type="text" id="edit-customer-name" required>
+
+        <label for="edit-mobile-number">Mobile Number:</label>
+        <input type="tel" id="edit-mobile-number" required pattern="[0-9]{10}">
+
+        <label for="edit-street-name">Street Name / House No:</label>
+        <input type="text" id="edit-street-name" required>
+
+        <label for="edit-nearby-landmark">Nearby Landmark:</label>
+        <input type="text" id="edit-nearby-landmark" required>
+
+        <label for="edit-district">District:</label>
+        <input type="text" id="edit-district" required>
+
+        <label for="edit-state">State:</label>
+        <input type="text" id="edit-state" required>
+
+        <label for="edit-pincode">Pincode:</label>
+        <input type="text" id="edit-pincode" required pattern="[0-9]{6}">
+
+        <button type="button" id="save-profile-changes-button">Save Changes</button>
+    </form>
+
+    <div class="profile-actions">
+        <button id="profile-toggle-edit-button" class="button-outline">Edit Profile</button>
+        <button id="help-button" class="button-outline">Help</button>
+        <button id="logout-button" class="button-danger">Logout</button>
+    </div>
+</div>
+
+        
 
             <div id="search-page" class="page">
                 <div class="page-header-with-back">
