@@ -68,7 +68,7 @@ function renderItems(items, container, context) {
                     </div>
                     <div>
                         <button class="share-button" data-name="${item.name}" data-item-id="${item.id}"><i class="fa-solid fa-share-alt"></i></button>
-                        <button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
+                        <button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-bag-shopping"></i></button>
                     </div>
                 </div>
             </div>
