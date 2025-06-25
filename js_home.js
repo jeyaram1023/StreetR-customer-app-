@@ -1,8 +1,7 @@
-// js/js_home.js
-const popularItemsContainer =
-    document.getElementById('popular-items-container');
-const allItemsContainer =
-    document.getElementById('all-items-container');
+// js_home.js
+
+const popularItemsContainer = document.getElementById('popular-items-container');
+const allItemsContainer = document.getElementById('all-items-container');
 const itemDetailPage = document.getElementById('item-detail-page');
 
 async function loadHomePageContent() {
@@ -20,14 +19,18 @@ async function loadHomePageContent() {
             .select('id')
             .eq('user_type', 'Seller')
             .eq('pincode', window.userProfile.pincode);
+
         if (sellersError) throw sellersError;
+
         const sellerIds = sellers.map(s => s.id);
+
         if (sellerIds.length === 0) {
             allItemsContainer.innerHTML = '<p>No sellers found in your area yet.</p>';
             popularItemsContainer.innerHTML = '';
             hideLoader();
             return;
         }
+
         const {
             data: items,
             error: itemsError
@@ -36,9 +39,10 @@ async function loadHomePageContent() {
                 p_seller_ids: sellerIds,
                 p_user_id: window.currentUser.id
             });
+
         if (itemsError) throw itemsError;
-        const popularItems = [...items].sort((a, b) => b.like_count -
-            a.like_count).slice(0, 4);
+
+        const popularItems = [...items].sort((a, b) => b.like_count - a.like_count).slice(0, 4);
         renderItems(popularItems, popularItemsContainer, 'popular');
         renderItems(items, allItemsContainer, 'all');
     } catch (error) {
@@ -60,44 +64,42 @@ function renderItems(items, container, context) {
         itemCard.className = 'item-card';
         itemCard.dataset.itemId = item.id;
         itemCard.innerHTML = `
-<img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
-<div class="item-card-content">
-<h4>${item.name}</h4>
-<p>₹${item.price.toFixed(2)}</p>
-<div class="item-card-footer">
-<div>
-<button class="like-button ${item.is_liked_by_user ? 'liked' : ''}" data-item-id="${item.id}" data-liked="${item.is_liked_by_user}">
-<i class="fa-${item.is_liked_by_user ? 'solid' : 'regular'} fa-heart"></i>
-</button>
-<span class="like-count">${item.like_count}</span>
-</div>
-<div>
-<button class="share-button" data-name="${item.name}"><i class="fa-solid fa-share-alt"></i></button>
-<button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
-</div>
-</div>
-</div>`;
+            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
+            <div class="item-card-content">
+                <h4>${item.name}</h4>
+                <p>₹${item.price.toFixed(2)}</p>
+                <div class="item-card-footer">
+                    <div>
+                        <button class="like-button ${item.is_liked_by_user ? 'liked' : ''}" data-item-id="${item.id}" data-liked="${item.is_liked_by_user}">
+                            <i class="fa-${item.is_liked_by_user ? 'solid' : 'regular'} fa-heart"></i>
+                        </button>
+                        <span class="like-count">${item.like_count}</span>
+                    </div>
+                    <div>
+                        <button class="share-button" data-name="${item.name}"><i class="fa-solid fa-share-alt"></i></button>
+                        <button class="add-to-cart-btn" data-item-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>`;
         container.appendChild(itemCard);
     });
+
     // Add event listeners
-    container.querySelectorAll('.like-button').forEach(b =>
-        b.addEventListener('click', handleLikeClick));
-    container.querySelectorAll('.add-to-cart-btn').forEach(b =>
-        b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const itemId = e.currentTarget.dataset.itemId;
-            const item = items.find(i => i.id === itemId);
-            if (item) {
-                addToCart(item);
-                launchConfetti();
-            }
-        }));
-    container.querySelectorAll('.share-button').forEach(b =>
-        b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const name = e.currentTarget.dataset.name;
-            shareItem(name);
-        }));
+    container.querySelectorAll('.like-button').forEach(b => b.addEventListener('click', handleLikeClick));
+    container.querySelectorAll('.add-to-cart-btn').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const itemId = e.currentTarget.dataset.itemId;
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            addToCart(item);
+            launchConfetti();
+        }
+    }));
+    container.querySelectorAll('.share-button').forEach(b => b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = e.currentTarget.dataset.name;
+        shareItem(name);
+    }));
     container.querySelectorAll('.item-card').forEach(card => {
         card.addEventListener('click', (e) => {
             if (e.target.closest('button')) {
@@ -166,50 +168,54 @@ async function showItemDetailPage(itemId) {
         } = await supabase
             .from('menu_items')
             .select(`
-*,
-seller:profiles(shop_name)
-`)
+                *,
+                seller:profiles(shop_name)
+            `)
             .eq('id', itemId)
             .single();
+
         if (error) throw error;
+
         const {
             data: otherItems,
             error: otherItemsError
-        } = await
-        supabase
+        } = await supabase
             .from('menu_items')
             .select('*')
             .eq('seller_id', item.seller_id)
             .neq('id', item.id)
             .limit(5);
+
         if (otherItemsError) throw otherItemsError;
+
         itemDetailPage.innerHTML = `
-<div class="page-header-with-back">
-<button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
-</div>
-<div class="item-detail-content">
-<img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}" class="item-detail-image">
-<h2>${item.name}</h2>
-<p class="shop-name">From: ${item.seller.shop_name}</p>
-<p class="item-price">₹${item.price.toFixed(2)}</p>
-<p class="item-description">${item.description || 'No description available.'}</p>
-<div class="item-detail-actions">
-<button id="detail-add-to-cart-btn" class="button-primary add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
-</div>
-<div class="more-from-shop">
-<h3>More from ${item.seller.shop_name}</h3>
-<div id="more-items-container" class="item-grid"></div>
-</div>
-</div>`;
-        renderItems(otherItems,
-            itemDetailPage.querySelector('#more-items-container'), 'more-items');
-        // FIXED: Corrected the typo in 'addEventListener'
+            <div class="page-header-with-back">
+                <button class="back-to-home-btn icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+            <div class="item-detail-content">
+                <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}" class="item-detail-image">
+                <h2>${item.name}</h2>
+                <p class="shop-name">From: ${item.seller.shop_name}</p>
+                <p class="item-price">₹${item.price.toFixed(2)}</p>
+                <p class="item-description">${item.description || 'No description available.'}</p>
+                <div class="item-detail-actions">
+                    <button id="detail-add-to-cart-btn" class="button-primary add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+                </div>
+                <div class="more-from-shop">
+                    <h3>More from ${item.seller.shop_name}</h3>
+                    <div id="more-items-container" class="item-grid"></div>
+                </div>
+            </div>`;
+
+        renderItems(otherItems, itemDetailPage.querySelector('#more-items-container'), 'more-items');
+
+        // **FIXED CODE**
         itemDetailPage.querySelector('.back-to-home-btn').addEventListener('click', () => navigateToPage('main-app-view', 'home-page-content'));
-        // FIXED: Corrected the typo in 'addEventListener'
         itemDetailPage.querySelector('#detail-add-to-cart-btn').addEventListener('click', () => {
             addToCart(item);
             launchConfetti();
         });
+
         navigateToPage('item-detail-page');
     } catch (error) {
         console.error('Error fetching item details:', error);
