@@ -1,4 +1,4 @@
-// js_home.js
+// js_home.js (FIXED & Corrected)
 
 const popularItemsContainer = document.getElementById('popular-items-container');
 const allItemsContainer = document.getElementById('all-items-container');
@@ -11,10 +11,7 @@ async function loadHomePageContent() {
     }
     showLoader();
     try {
-        const {
-            data: sellers,
-            error: sellersError
-        } = await supabase
+        const { data: sellers, error: sellersError } = await supabase
             .from('profiles')
             .select('id')
             .eq('user_type', 'Seller')
@@ -27,14 +24,10 @@ async function loadHomePageContent() {
         if (sellerIds.length === 0) {
             allItemsContainer.innerHTML = '<p>No sellers found in your area yet.</p>';
             popularItemsContainer.innerHTML = '';
-            hideLoader();
             return;
         }
 
-        const {
-            data: items,
-            error: itemsError
-        } = await supabase
+        const { data: items, error: itemsError } = await supabase
             .rpc('get_menu_items_with_likes', {
                 p_seller_ids: sellerIds,
                 p_user_id: window.currentUser.id
@@ -84,7 +77,6 @@ function renderItems(items, container, context) {
         container.appendChild(itemCard);
     });
 
-    // Add event listeners
     container.querySelectorAll('.like-button').forEach(b => b.addEventListener('click', handleLikeClick));
     container.querySelectorAll('.add-to-cart-btn').forEach(b => b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -128,15 +120,9 @@ async function handleLikeClick(event) {
     button.querySelector('i').className = `fa-${isLiked ? 'solid' : 'regular'} fa-heart`;
     try {
         if (!isLiked) {
-            await supabase.from('likes').delete().match({
-                user_id: window.currentUser.id,
-                menu_item_id: itemId
-            });
+            await supabase.from('likes').delete().match({ user_id: window.currentUser.id, menu_item_id: itemId });
         } else {
-            await supabase.from('likes').insert({
-                user_id: window.currentUser.id,
-                menu_item_id: itemId
-            });
+            await supabase.from('likes').insert({ user_id: window.currentUser.id, menu_item_id: itemId });
         }
         loadHomePageContent();
     } catch (error) {
@@ -162,24 +148,16 @@ function shareItem(itemName) {
 async function showItemDetailPage(itemId) {
     showLoader();
     try {
-        const {
-            data: item,
-            error
-        } = await supabase
+        const { data: item, error } = await supabase
             .from('menu_items')
-            .select(`
-                *,
-                seller:profiles(shop_name)
-            `)
+            .select(`*, seller:profiles(shop_name)`)
             .eq('id', itemId)
             .single();
 
         if (error) throw error;
+        if (!item) throw new Error("Item not found in database.");
 
-        const {
-            data: otherItems,
-            error: otherItemsError
-        } = await supabase
+        const { data: otherItems, error: otherItemsError } = await supabase
             .from('menu_items')
             .select('*')
             .eq('seller_id', item.seller_id)
@@ -195,31 +173,42 @@ async function showItemDetailPage(itemId) {
             <div class="item-detail-content">
                 <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}" class="item-detail-image">
                 <h2>${item.name}</h2>
-                <p class="shop-name">From: ${item.seller.shop_name}</p>
+                <p class="shop-name">From: ${item.seller?.shop_name || 'Unknown Shop'}</p>
                 <p class="item-price">₹${item.price.toFixed(2)}</p>
                 <p class="item-description">${item.description || 'No description available.'}</p>
                 <div class="item-detail-actions">
-                    <button id="detail-add-to-cart-btn" class="button-primary add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+                    <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                 </div>
                 <div class="more-from-shop">
-                    <h3>More from ${item.seller.shop_name}</h3>
+                    <h3>More from ${item.seller?.shop_name || 'this shop'}</h3>
                     <div id="more-items-container" class="item-grid"></div>
                 </div>
             </div>`;
 
-        renderItems(otherItems, itemDetailPage.querySelector('#more-items-container'), 'more-items');
+        const moreItemsContainer = itemDetailPage.querySelector('#more-items-container');
+        if (moreItemsContainer) {
+            renderItems(otherItems, moreItemsContainer, 'more-items');
+        }
 
-        // **FIXED CODE**
-        itemDetailPage.querySelector('.back-to-home-btn').addEventListener('click', () => navigateToPage('main-app-view', 'home-page-content'));
-        itemDetailPage.querySelector('#detail-add-to-cart-btn').addEventListener('click', () => {
-            addToCart(item);
-            launchConfetti();
-        });
+        const backButton = itemDetailPage.querySelector('.back-to-home-btn');
+        if (backButton) {
+            backButton.addEventListener('click', () => navigateToPage('main-app-view', 'home-page-content'));
+        }
 
+        const addToCartButton = itemDetailPage.querySelector('#detail-add-to-cart-btn');
+        if (addToCartButton) {
+            addToCartButton.addEventListener('click', () => {
+                addToCart(item);
+                launchConfetti();
+            });
+        }
+        
         navigateToPage('item-detail-page');
+
     } catch (error) {
-        console.error('Error fetching item details:', error);
-        alert('Could not load item details.');
+        console.error('Error in showItemDetailPage:', error.message);
+        alert('Could not load item details. Please try again.');
+        navigateToPage('main-app-view', 'home-page-content');
     } finally {
         hideLoader();
     }
