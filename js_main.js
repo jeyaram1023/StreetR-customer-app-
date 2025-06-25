@@ -1,3 +1,5 @@
+// js_main.js (FIXED & Corrected)
+
 // Global state variables
 window.currentUser = null;
 window.userProfile = null;
@@ -21,15 +23,20 @@ function hideLoader() {
     document.getElementById('loading-modal').classList.add('hidden');
 }
 
-
-// --- NAVIGATION ---
+// --- NAVIGATION (THE FIX) ---
 function navigateToPage(pageId, tabContentId = null) {
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId)?.classList.add('active');
 
+    // **MODIFIED LOGIC**
+    // Define pages that exist outside the main nav structure
+    const isPreAuthPage = pageId === 'login-page' || pageId === 'profile-setup-page';
     const isMainView = pageId === 'main-app-view';
-    appHeader.style.display = isMainView ? 'flex' : 'none';
+
+    // Show header and nav only for the main app view and related full-screen pages
+    appHeader.style.display = isPreAuthPage ? 'none' : 'flex';
     bottomNav.style.display = isMainView ? 'flex' : 'none';
+
 
     // Manage footer visibility for cart's sticky button
     pageFooter.style.display = 'none';
@@ -39,7 +46,12 @@ function navigateToPage(pageId, tabContentId = null) {
         let activeTabId = tabContentId || 'home-page-content';
         navItems.forEach(nav => nav.classList.remove('active'));
         tabContents.forEach(tab => tab.classList.remove('active'));
-        document.getElementById(activeTabId)?.classList.add('active');
+
+        const activeTab = document.getElementById(activeTabId);
+        if(activeTab) {
+            activeTab.classList.add('active');
+        }
+
         const activeNavButton = bottomNav.querySelector(`[data-page="${activeTabId}"]`);
         if (activeNavButton) {
             activeNavButton.classList.add('active');
@@ -47,6 +59,7 @@ function navigateToPage(pageId, tabContentId = null) {
         handleTabChange(activeTabId);
     }
 }
+
 
 function handleTabChange(activeTabId) {
     if (activeTabId === 'cart-page-content') {
@@ -72,7 +85,7 @@ function handleTabChange(activeTabId) {
     }
 }
 
-// --- AUTHENTICATION FLOW (THE FIX) ---
+// --- AUTHENTICATION FLOW ---
 async function fetchProfile(userId) {
     const {
         data,
@@ -92,7 +105,6 @@ async function fetchProfile(userId) {
 async function handleUserSession(session) {
     window.currentUser = session.user;
     const profile = await fetchProfile(session.user.id);
-
     if (profile && profile.full_name) { // Profile is complete
         window.userProfile = profile;
         navigateToPage('main-app-view');
@@ -169,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navigateToPage('likes-page');
         loadLikedItems();
     });
-    
+
     // Generic back to home button clicks
     document.querySelectorAll('.back-to-home-btn').forEach(button => {
         button.addEventListener('click', () => {
@@ -187,10 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeMoreMenu = () => {
         moreMenuPopup.classList.add('hidden');
     };
-
     closeMoreMenuBtn?.addEventListener('click', closeMoreMenu);
     moreMenuOverlay?.addEventListener('click', closeMoreMenu);
-
 
     // Initial auth check
     checkAuthState();
