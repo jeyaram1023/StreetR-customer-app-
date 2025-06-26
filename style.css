@@ -162,12 +162,31 @@ button:active {
     padding: 20px;
 }
 
+/*  login screen icon */
 .app-icon-large {
-    width: 90px;
-    height: 90px;
-    margin-bottom: 20px;
+width: 130px;
+height: 130px;
+border-radius: 50%;
+margin: 20px auto;
+display: flex;
+align-items: center;
+justify-content: center;
+background: linear-gradient(135deg, #03A9F4, #FFA07A, #32CD32); / Combo 3 /
+box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.4); / Thin shadow /
+animation: logoSpinPulse 4s ease-in-out infinite;
+transition: transform 0.3s ease;
+padding: 6px; / Thickness of the border */
 }
 
+.app-icon-large img {
+width: 100%;
+height: 100%;
+border-radius: 50%;
+background-color: white;
+padding: 6px;
+box-sizing: border-box;
+object-fit: cover;
+}
 /* Forms & Buttons */
 input[type="email"],
 input[type="text"],
