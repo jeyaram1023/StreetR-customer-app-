@@ -1068,6 +1068,64 @@ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 
+/* loding screen style*/
+/* Loader Fullscreen Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Dark background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* Container for loader content */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Spinning circle animation */
+.spinning-circle {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #FF7518;
+  border-top: 6px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+/* App name text */
+.loader-text {
+  font-size: 1.8em;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Orange part */
+.text-orange {
+  color: #FF7518;
+}
+
+/* White part */
+.text-white {
+  color: white;
+}
+
+/* Spin keyframes */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
 /* Helper classes */
 .hidden {
     display: none !important;
