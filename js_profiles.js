@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 district: document.getElementById('district').value.trim(),
                 state: document.getElementById('state').value.trim(),
                 pincode: document.getElementById('pincode').value.trim(),
+                user_type: 'Customer' // FIXED: Added user_type to satisfy NOT NULL constraint
             };
 
             if (!updates.full_name || !updates.mobile_number || !updates.pincode) {
