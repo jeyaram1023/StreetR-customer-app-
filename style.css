@@ -352,12 +352,14 @@ button:hover {
   padding: 0 10px;
 }
 
-/* 📱 Mobile View: 1 column */
+/* 📱 Mobile View: 1 column 
+
 @media (max-width: 600px) {
   .item-grid {
     grid-template-columns: 1fr;
   }
 }
+*/
 /* Card Styles */
 .item-card,
 .shop-card {
