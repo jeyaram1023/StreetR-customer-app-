@@ -166,6 +166,7 @@ async function showItemDetailPage(itemId) {
             <div class="item-detail-header">
                 <button id="back-to-home-btn" class="icon-button"><i class="fa-solid fa-arrow-left"></i></button>
             </div>
+            <button id="back-to-home-btn" class="icon-button"><i class="fa-solid fa-arrow-left"></i></button>
             <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}" class="item-detail-image">
             <div class="item-detail-content">
                 <h2>${item.name}</h2>
