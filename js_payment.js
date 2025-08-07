@@ -1,98 +1,139 @@
-// js_payment.js (New File)
+// js_payment.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    const payWithRazorpayButton = document.getElementById('pay-with-razorpay-button');
-    const paymentQrCode = document.getElementById('payment-qr-code');
+    const placeOrderButton = document.getElementById('place-order-button');
 
-    // This function would be called when navigating to the payment page
-    // It should ideally be called from js_add_to_cart.js (from the Place Order button)
-    // or js_main.js when setting up the page navigation.
-    window.loadPaymentPage = function() {
-        const amountToPay = window.paymentAmount || 0; // Get amount from global variable set by cart
+    if (placeOrderButton) {
+        placeOrderButton.addEventListener('click', handlePlaceOrder);
+    }
+});
 
-        if (amountToPay === 0) {
-            console.warn('Payment amount is 0, returning to cart.');
-            navigateToPage('main-app-view', 'cart-page-content');
+async function handlePlaceOrder() {
+    showLoader();
+    try {
+        const cart = getCart();
+        if (cart.length === 0) {
+            alert("Your cart is empty.");
+            hideLoader();
             return;
         }
 
-        console.log('Loading payment page for amount:', amountToPay);
-        // You would dynamically generate a QR code here for UPI payment
-        // For demonstration, we'll use a placeholder image.
-        // In a real app, this would be a server-side generated UPI QR code string
-        // or a Razorpay QR code specific to the transaction.
-        paymentQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=yourvpa@bank&pn=StreetR&am=${amountToPay.toFixed(2)}`;
-        // Replace 'yourvpa@bank' with an actual UPI VPA for testing or dynamic VPA
-    };
+        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const gst = 18;
+        const deliveryFee = calculateDeliveryFee(subtotal);
+        const platformFee = 20;
+        const totalAmount = subtotal + gst + deliveryFee + platformFee;
 
-    if (payWithRazorpayButton) {
-        payWithRazorpayButton.addEventListener('click', () => {
-            alert('Initiating Razorpay payment... (Integration would go here)');
-            console.log('Attempting Razorpay payment for amount:', window.paymentAmount);
+        // 1. Generate the order_token from your backend
+        const { order_token } = await generateCashfreeToken(totalAmount, cart);
 
-            // Simulate Razorpay checkout (replace with actual Razorpay integration)
-            const options = {
-                key: "YOUR_RAZORPAY_KEY_ID", // Replace with your actual Razorpay Key ID
-                amount: (window.paymentAmount * 100).toFixed(0), // Amount in paisa
-                currency: "INR",
-                name: "StreetR",
-                description: "Food Order Payment",
-                image: "assets/app-logo.png",
-                handler: function (response) {
-                    alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
-                    console.log("Razorpay Response:", response);
-                    // On payment success, move to orders page
-                    navigateToPage('main-app-view', 'orders-page-content');
-                    // Clear the cart after successful payment
-                    cart = [];
-                    saveCart(); // Save empty cart
-                },
-                prefill: {
-                    name: window.userProfile?.customer_name || "Customer",
-                    email: window.currentUser?.email || "",
-                    contact: window.userProfile?.mobile_number || ""
-                },
-                notes: {
-                    address: "StreetR Office"
-                },
-                theme: {
-                    color: "#388E3C" // Green color for Razorpay theme
-                }
-            };
-
-            const rzp = new Razorpay(options);
-            rzp.on('razorpay_payment_failed', function (response) {
-                alert("Payment Failed: " + response.error.code + " - " + response.error.description);
-                console.error("Razorpay Error:", response.error);
-                // Stay on payment page or navigate back to cart
-            });
-            rzp.open();
+        // 2. Show the Cashfree Drop-in UI
+        triggerCashfreeCheckout(order_token, {
+            totalAmount,
+            platformFee,
+            gst,
+            deliveryFee,
+            cart
         });
+
+    } catch (error) {
+        console.error("Error placing order:", error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        hideLoader();
+    }
+}
+
+async function generateCashfreeToken(totalAmount, cart) {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+        throw new Error("User not authenticated.");
     }
 
-    // This ensures loadPaymentPage is called when the payment page is actually displayed
-    // It's assumed to be part of the navigateToPage logic in js_main.js
-    // or explicitly called after navigateToPage completes.
-    // For now, let's add a listener to the page content div if it becomes active.
-    const paymentPageContent = document.getElementById('payment-page');
-    if (paymentPageContent) {
-        // Observer to check when payment-page becomes active (if not using direct calls from main.js)
-        const observer = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
-                if (mutation.attributeName === 'class') {
-                    if (paymentPageContent.classList.contains('active') && !paymentPageContent.dataset.loaded) {
-                        window.loadPaymentPage();
-                        paymentPageContent.dataset.loaded = 'true'; // Prevent re-loading
-                    } else if (!paymentPageContent.classList.contains('active')) {
-                        paymentPageContent.dataset.loaded = ''; // Reset when page is hidden
-                    }
-                }
-            }
-        });
-        observer.observe(paymentPageContent, { attributes: true });
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-cashfree-order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ total_amount: totalAmount, cart: cart }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate Cashfree token.');
     }
 
-    // Include Razorpay's checkout.js script dynamically or in index.html
-    // This should ideally be in index.html for faster loading
-    // <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-});
+    return await response.json();
+}
+
+function triggerCashfreeCheckout(orderToken, orderData) {
+    const cashfree = new Cashfree({
+        mode: "sandbox" // Use "production" for live payments
+    });
+
+    cashfree.drop(document.getElementById("payment-page"), {
+        orderToken: orderToken,
+        onSuccess: (data) => handlePaymentSuccess(data.order, orderData),
+        onFailure: (data) => {
+            console.error("Payment failed:", data.order);
+            alert(`Payment Failed: ${data.order.errorText}`);
+        },
+    });
+}
+
+async function handlePaymentSuccess(order, orderData) {
+    showLoader();
+    try {
+        const { cart, totalAmount, platformFee, gst, deliveryFee } = orderData;
+        const sellerId = cart.length > 0 ? cart[0].seller_id : null;
+        if (!sellerId) {
+            throw new Error("Seller information is missing from the cart.");
+        }
+
+        const sellerAmount = totalAmount - platformFee - gst - deliveryFee;
+        const companyProfit = platformFee + gst;
+
+        // 3. Store order data in Supabase
+        const { error } = await supabase.from('orders').insert([{
+            payment_token: order.paymentToken,
+            user_id: window.currentUser.id,
+            seller_id: sellerId,
+            total_amount: totalAmount,
+            platform_fee: platformFee,
+            gst: gst,
+            delivery_fee: deliveryFee,
+            seller_amount: sellerAmount,
+            company_profit: companyProfit,
+            status: 'paid',
+            order_details: cart
+        }]);
+
+        if (error) {
+            throw error;
+        }
+
+        alert("Payment successful! Your order has been placed.");
+        localStorage.removeItem('streetrCart'); // Clear the cart
+        navigateToPage('main-app-view', 'orders-page-content');
+
+    } catch (error) {
+        console.error("Error saving order:", error);
+        alert(`An error occurred while saving your order: ${error.message}`);
+    } finally {
+        hideLoader();
+    }
+}
+
+// Utility function from your existing code
+function getCart() {
+    return JSON.parse(localStorage.getItem('streetrCart')) || [];
+}
+
+function calculateDeliveryFee(subtotal) {
+    if (subtotal <= 100) return 10;
+    if (subtotal <= 200) return 15;
+    if (subtotal <= 500) return 20;
+    if (subtotal <= 1000) return 25;
+    return 30;
+                }
