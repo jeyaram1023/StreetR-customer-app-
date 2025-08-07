@@ -4,8 +4,7 @@
 
 A modern mobile app that helps users discover and connect with nearby street-side service providers with ease.
 
-🌐 **Live App**: [Try Now](https://github.com/jeyaram1023/StreetR-customer-app-.git
-cd StreetR-customer-app-)  
+🌐 **Live App**: [Try Now](https://jeyaram1023.github.io/StreetR-customer-app-/)  
 📦 Built using **Flutter** + **Firebase**  
 📍 Features real-time location, service requests, and GPS tracking!
 
