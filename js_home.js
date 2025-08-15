@@ -1,4 +1,5 @@
 // js_home.js
+
 const popularItemsContainer = document.getElementById('popular-items-container');
 const allItemsContainer = document.getElementById('all-items-container');
 const itemDetailPage = document.getElementById('item-detail-page');
@@ -58,12 +59,10 @@ function renderItems(items, container, context) {
                 <h4>${item.name}</h4>
                 <p>₹${item.price.toFixed(2)}</p>
                 <div class="item-card-footer">
-                
                     <div>
                         <button class="like-button ${item.is_liked_by_user ? 'liked' : ''}" data-item-id="${item.id}" data-liked="${item.is_liked_by_user}">
                             <i class="fa-${item.is_liked_by_user ? 'solid' : 'regular'} fa-heart"></i>
                             <span class="like-count">${item.like_count}</span>
-  
                         </button>
                     </div>
                     <div>
@@ -76,7 +75,7 @@ function renderItems(items, container, context) {
         container.appendChild(itemCard);
     });
 
-    // Add event listeners
+    // Event listeners
     container.querySelectorAll('.like-button').forEach(b => b.addEventListener('click', handleLikeClick));
     container.querySelectorAll('.add-to-cart-btn').forEach(b => b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -92,7 +91,7 @@ function renderItems(items, container, context) {
         shareItem(name, itemId);
     }));
     container.querySelectorAll('.item-card').forEach(c => c.addEventListener('click', (e) => {
-        if(e.target.closest('button')) return; // ignore clicks on buttons
+        if(e.target.closest('button')) return;
         const itemId = c.dataset.itemId;
         showItemDetailPage(itemId);
     }));
@@ -118,11 +117,9 @@ async function handleLikeClick(event) {
         } else {
             await supabase.from('likes').insert({ user_id: window.currentUser.id, menu_item_id: itemId });
         }
-        // Optionally reload content to update like counts everywhere
         loadHomePageContent();
     } catch (error) {
         console.error("Error updating like:", error);
-        // Revert UI on error
         button.classList.toggle('liked', isLiked);
         button.dataset.liked = isLiked;
         icon.className = `fa-${isLiked ? 'solid' : 'regular'} fa-heart`;
@@ -153,38 +150,38 @@ async function showItemDetailPage(itemId) {
             .single();
         if (error) throw error;
 
-        // Fetch other items from the same seller
         const { data: otherItems, error: otherItemsError } = await supabase
             .from('menu_items')
             .select(`*`)
             .eq('seller_id', item.seller_id)
-            .neq('id', item.id) // Exclude the current item
+            .neq('id', item.id)
             .limit(5);
         if(otherItemsError) throw otherItemsError;
 
         itemDetailPage.innerHTML = `
-            <div class="item-detail-header">
-                <button id="back-to-home-btn" class="icon-button"><i class="fa-solid fa-arrow-left"></i></button>
-            </div>
-            <button id="back-to-home-btn" class="icon-button"><i class="fa-solid fa-arrow-left"></i></button>
+            <button id="back-to-home-btn" class="floating-back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
             <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}" class="item-detail-image">
             <div class="item-detail-content">
                 <h2>${item.name}</h2>
                 <p class="shop-name">From: ${item.seller.shop_name}</p>
                 <p class="item-price">₹${item.price.toFixed(2)}</p>
                 <p class="item-description">${item.description || 'No description available.'}</p>
-                <p ❤️${item.like_count}<p>
+                <p>❤️ ${item.like_count ?? 0}</p>
                 <div class="item-detail-actions">
-                     <button id="detail-like-btn" class="like-button-large"><i class="fa-regular fa-heart"></i> Likes 
-                     <span class="like-count">${item.like_count ?? 0}</span>
-  
+                     <button id="detail-like-btn" class="like-button-large">
+                         <i class="fa-regular fa-heart"></i> Likes 
+                         <span class="like-count">${item.like_count ?? 0}</span>
                      </button>
-                     <button id="detail-share-btn" class="like-button-large"><i class="fa-solid fa-share-alt"></i> Share</button>
-                     <button id="detail-add-to-cart-btn" class="add-to-cart-large"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
-
-
+                     <button id="detail-share-btn" class="like-button-large">
+                         <i class="fa-solid fa-share-alt"></i> Share
+                     </button>
+                     <button id="detail-add-to-cart-btn" class="add-to-cart-large">
+                         <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                     </button>
                 </div>
-                 <div class="more-from-shop">
+                <div class="more-from-shop">
                     <h3>More from ${item.seller.shop_name}</h3>
                     <div id="more-items-container" class="item-grid"></div>
                 </div>
@@ -193,7 +190,9 @@ async function showItemDetailPage(itemId) {
 
         renderItems(otherItems, itemDetailPage.querySelector('#more-items-container'), 'more');
         
-        itemDetailPage.querySelector('#back-to-home-btn').addEventListener('click', () => navigateToPage('main-app-view', 'home-page-content'));
+        itemDetailPage.querySelector('#back-to-home-btn').addEventListener('click', () => {
+            navigateToPage('main-app-view', 'home-page-content');
+        });
         itemDetailPage.querySelector('#detail-add-to-cart-btn').addEventListener('click', () => {
             addToCart(item);
             launchConfetti();
