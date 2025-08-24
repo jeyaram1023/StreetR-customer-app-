@@ -1,6 +1,6 @@
 # 🚗 StreetR – Customer App
 
-![StreetR Logo](https://your-image-link.com/logo.png) <!-- Optional Logo -->
+![StreetR Logo](https://uploads.onecompiler.io/42q5e2pr5/43m4t5ddk/web-app-manifest-192x192.png) <!-- Optional Logo -->
 
 A modern mobile app that helps users discover and connect with nearby street-side service providers with ease.
 
