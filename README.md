@@ -4,7 +4,7 @@
 
 A modern mobile app that helps users discover and connect with nearby street-side service providers with ease.
 
-🌐 **Live App**: [Try Now](https://jeyaram1023.github.io/StreetR-customer-app-/)  
+🌐 **Live App**: [Click here to Try App Now](https://jeyaram1023.github.io/StreetR-customer-app-/)  
 📦 Built using **Flutter** + **Firebase**  
 📍 Features real-time location, service requests, and GPS tracking!
 
@@ -49,10 +49,6 @@ A modern mobile app that helps users discover and connect with nearby street-sid
 - Google Maps API Key
 
 ### Installation
-```bash
-https://jeyaram1023.github.io/StreetR-customer-app-/
-
-
 
 ```bash
 git clone https://github.com/jeyaram1023/StreetR-customer-app-.git
