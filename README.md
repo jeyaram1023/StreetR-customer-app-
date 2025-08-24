@@ -49,8 +49,14 @@ A modern mobile app that helps users discover and connect with nearby street-sid
 - Google Maps API Key
 
 ### Installation
+```bash
+https://jeyaram1023.github.io/StreetR-customer-app-/
+
+
 
 ```bash
 git clone https://github.com/jeyaram1023/StreetR-customer-app-.git
 cd StreetR-customer-app-
 flutter pub get
+
+
