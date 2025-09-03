@@ -2,13 +2,11 @@
 const cartItemsContainer = document.getElementById('cart-items-container');
 const cartSummaryDiv = document.getElementById('cart-summary');
 const cartEmptyView = document.getElementById('cart-empty-view');
-
 // Bill details spans
 const cartSubtotalSpan = document.getElementById('cart-subtotal');
 const cartGstSpan = document.getElementById('cart-gst');
 const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
 const cartGrandTotalSpan = document.getElementById('cart-grand-total');
-
 const placeOrderButton = document.getElementById('place-order-button');
 
 function getCart() {
@@ -59,18 +57,15 @@ function calculateDeliveryFee(subtotal) {
 function displayCartItems() {
     const cart = getCart();
     cartItemsContainer.innerHTML = '';
-
     if (cart.length === 0) {
         cartSummaryDiv.classList.add('hidden');
         cartEmptyView.classList.remove('hidden');
         placeOrderButton.classList.add('hidden');
         return;
     }
-
     cartSummaryDiv.classList.remove('hidden');
     cartEmptyView.classList.add('hidden');
     placeOrderButton.classList.remove('hidden');
-
     let subtotal = 0;
     cart.forEach(item => {
         const itemSubtotal = item.price * item.quantity;
@@ -95,17 +90,14 @@ function displayCartItems() {
         `;
         cartItemsContainer.appendChild(itemElement);
     });
-
     // Update bill details
     const gst = subtotal * 0.10;
     const deliveryFee = calculateDeliveryFee(subtotal);
     const grandTotal = subtotal + gst + deliveryFee;
-
     cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
     cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
     cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
     cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
-
     // Add event listeners to new quantity buttons
     cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', () => {
