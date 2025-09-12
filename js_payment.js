@@ -1,49 +1,144 @@
-// js_add_to_cart.js
-const cartItemsContainer = document.getElementById('cart-items-container');
-const cartSummaryDiv = document.getElementById('cart-summary');
-const cartEmptyView = document.getElementById('cart-empty-view');
-// Bill details spans
-const cartSubtotalSpan = document.getElementById('cart-subtotal');
-const cartGstSpan = document.getElementById('cart-gst');
-const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
-const cartGrandTotalSpan = document.getElementById('cart-grand-total');
-const placeOrderButton = document.getElementById('place-order-button');
+// js_payment.js
 
+document.addEventListener('DOMContentLoaded', () => {
+    // This script's functions will be called by the navigation logic
+    // when the payment page becomes active.
+});
+
+// Call this function when navigating to the payment page
+async function initializePaymentPage() {
+    showLoader();
+    try {
+        const cart = getCart();
+        if (cart.length === 0) {
+            alert("Your cart is empty. Redirecting to home.");
+            navigateToPage('main-app-view', 'home-page-content');
+            return;
+        }
+
+        // Get delivery preference from sessionStorage
+        const isDelivery = sessionStorage.getItem('isDelivery') === 'true';
+
+        // 1. Generate the order_token from your backend
+        // We send the cart and delivery preference to the backend for secure price calculation.
+        const { order_token } = await generateCashfreeToken(cart, isDelivery);
+
+        // 2. Show the Cashfree Drop-in UI
+        triggerCashfreeCheckout(order_token, { cart, isDelivery });
+
+    } catch (error) {
+        console.error("Error initiating payment:", error);
+        alert(Error: ${error.message});
+        navigateToPage('main-app-view', 'cart-page-content'); // Go back to cart on error
+    } finally {
+        hideLoader();
+    }
+}
+
+async function generateCashfreeToken(cart, isDelivery) {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+        throw new Error("User not authenticated.");
+    }
+
+    const response = await fetch(${SUPABASE_URL}/functions/v1/create-cashfree-order, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': Bearer ${session.access_token},
+        },
+        body: JSON.stringify({ cart: cart, is_delivery: isDelivery }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate Cashfree token.');
+    }
+    return await response.json();
+}
+
+function triggerCashfreeCheckout(orderToken, orderData) {
+    const cashfree = new Cashfree({
+        mode: "sandbox" // Use "production" for live payments
+    });
+
+    cashfree.drop(document.getElementById("payment-page"), {
+        orderToken: orderToken,
+        onSuccess: (data) => handlePaymentSuccess(data.order, orderData),
+        onFailure: (data) => {
+            console.error("Payment failed:", data.order);
+            alert(Payment Failed: ${data.order.errorText});
+        },
+    });
+}
+
+// Generates a 6-digit alphanumeric OTP
+function generateOTP() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let otp = '';
+    for (let i = 0; i < 6; i++) {
+        otp += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return otp;
+}
+
+async function handlePaymentSuccess(order, orderData) {
+    showLoader();
+    try {
+        const { cart, isDelivery } = orderData;
+        const sellerId = cart.length > 0 ? cart[0].seller_id : null;
+        if (!sellerId) {
+            throw new Error("Seller information is missing from the cart.");
+        }
+
+        // Re-calculate final amounts for database storage
+        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const platformFee = 5.00;
+        const gst = isDelivery ? subtotal * 0.10 : 0;
+        const deliveryFee = isDelivery ? calculateDeliveryFee(subtotal) : 0;
+        const totalAmount = subtotal + platformFee + gst + deliveryFee;
+
+        const sellerAmount = subtotal; // Seller gets the item subtotal
+        const companyProfit = platformFee + gst; // Company gets platform fee and GST
+
+        const newOTP = generateOTP(); // Generate the unique OTP for this order
+
+        // 3. Store order data in Supabase, including the new OTP
+        const { error } = await supabase.from('orders').insert([{
+            payment_token: order.paymentToken,
+            user_id: window.currentUser.id,
+            seller_id: sellerId,
+            total_amount: totalAmount,
+            platform_fee: platformFee,
+            gst: gst,
+            delivery_fee: deliveryFee,
+            seller_amount: sellerAmount,
+            company_profit: companyProfit,
+            status: 'paid',
+            order_details: cart,
+            otp: newOTP // Save the generated OTP
+        }]);
+
+        if (error) {
+            throw error;
+        }
+
+        alert("Payment successful! Your order has been placed.");
+        localStorage.removeItem('streetrCart'); // Clear the cart
+        sessionStorage.removeItem('isDelivery'); // Clean up session storage
+        navigateToPage('main-app-view', 'orders-page-content');
+
+    } catch (error) {
+        console.error("Error saving order:", error);
+        alert(An error occurred while saving your order: ${error.message});
+    } finally {
+        hideLoader();
+    }
+}
+
+// Utility functions (should match js_add_to_cart.js)
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
-}
-
-function saveCart(cart) {
-    localStorage.setItem('streetrCart', JSON.stringify(cart));
-    // Post a custom event that the cart has been updated
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-}
-
-function addToCart(item) {
-    let cart = getCart();
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
-    if (existingItem) {
-        existingItem.quantity++;
-    } else {
-        cart.push({ ...item, quantity: 1 });
-    }
-    saveCart(cart);
-    // Simple feedback, can be replaced with a less intrusive toast notification
-    alert(`${item.name} added to cart!`);
-    displayCartItems();
-}
-
-function updateCartQuantity(itemId, change) {
-    let cart = getCart();
-    const itemIndex = cart.findIndex(cartItem => cartItem.id === itemId);
-    if (itemIndex > -1) {
-        cart[itemIndex].quantity += change;
-        if (cart[itemIndex].quantity <= 0) {
-            cart.splice(itemIndex, 1);
-        }
-    }
-    saveCart(cart);
-    displayCartItems();
 }
 
 function calculateDeliveryFee(subtotal) {
@@ -53,61 +148,3 @@ function calculateDeliveryFee(subtotal) {
     if (subtotal <= 1000) return 25;
     return 30;
 }
-
-function displayCartItems() {
-    const cart = getCart();
-    cartItemsContainer.innerHTML = '';
-    if (cart.length === 0) {
-        cartSummaryDiv.classList.add('hidden');
-        cartEmptyView.classList.remove('hidden');
-        placeOrderButton.classList.add('hidden');
-        return;
-    }
-    cartSummaryDiv.classList.remove('hidden');
-    cartEmptyView.classList.add('hidden');
-    placeOrderButton.classList.remove('hidden');
-    let subtotal = 0;
-    cart.forEach(item => {
-        const itemSubtotal = item.price * item.quantity;
-        subtotal += itemSubtotal;
-        
-        const itemElement = document.createElement('div');
-        itemElement.className = 'cart-item-card';
-        itemElement.innerHTML = `
-            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
-            <div class="cart-item-details">
-                <h5>${item.name}</h5>
-                <p>Price: ₹${item.price.toFixed(2)}</p>
-                <div class="cart-item-footer">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" data-id="${item.id}" data-change="-1">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="quantity-btn" data-id="${item.id}" data-change="1">+</button>
-                    </div>
-                    <span class="cart-item-subtotal">₹${itemSubtotal.toFixed(2)}</span>
-                </div>
-            </div>
-        `;
-        cartItemsContainer.appendChild(itemElement);
-    });
-    // Update bill details
-    const gst = subtotal * 0.10;
-    const deliveryFee = calculateDeliveryFee(subtotal);
-    const grandTotal = subtotal + gst + deliveryFee;
-    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
-    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
-    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
-    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
-    // Add event listeners to new quantity buttons
-    cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const itemId = btn.dataset.id;
-            const change = parseInt(btn.dataset.change);
-            updateCartQuantity(itemId, change);
-        });
-    });
-}
-
-placeOrderButton?.addEventListener('click', () => {
-    navigateToPage('payment-page');
-});
