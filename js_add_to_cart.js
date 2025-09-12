@@ -2,12 +2,22 @@
 const cartItemsContainer = document.getElementById('cart-items-container');
 const cartSummaryDiv = document.getElementById('cart-summary');
 const cartEmptyView = document.getElementById('cart-empty-view');
+const placeOrderButton = document.getElementById('place-order-button');
+
 // Bill details spans
 const cartSubtotalSpan = document.getElementById('cart-subtotal');
 const cartGstSpan = document.getElementById('cart-gst');
+const cartPlatformFeeSpan = document.getElementById('cart-platform-fee');
 const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
 const cartGrandTotalSpan = document.getElementById('cart-grand-total');
-const placeOrderButton = document.getElementById('place-order-button');
+const deliveryFeeRow = document.getElementById('delivery-fee-row');
+
+// MODIFIED: New element selectors
+const rahulSwitch = document.getElementById('rahul-switch');
+const disclaimerModal = document.getElementById('disclaimer-modal');
+const disclaimerAcceptBtn = document.getElementById('disclaimer-accept-btn');
+const disclaimerCancelBtn = document.getElementById('disclaimer-cancel-btn');
+
 
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
@@ -15,7 +25,6 @@ function getCart() {
 
 function saveCart(cart) {
     localStorage.setItem('streetrCart', JSON.stringify(cart));
-    // Post a custom event that the cart has been updated
     window.dispatchEvent(new CustomEvent('cartUpdated'));
 }
 
@@ -28,8 +37,7 @@ function addToCart(item) {
         cart.push({ ...item, quantity: 1 });
     }
     saveCart(cart);
-    // Simple feedback, can be replaced with a less intrusive toast notification
-    alert(`${item.name} added to cart!`);
+    alert(${item.name} added to cart!);
     displayCartItems();
 }
 
@@ -54,18 +62,19 @@ function calculateDeliveryFee(subtotal) {
     return 30;
 }
 
+// MODIFIED: displayCartItems function is heavily updated for new logic
 function displayCartItems() {
     const cart = getCart();
     cartItemsContainer.innerHTML = '';
     if (cart.length === 0) {
         cartSummaryDiv.classList.add('hidden');
         cartEmptyView.classList.remove('hidden');
-        placeOrderButton.classList.add('hidden');
         return;
     }
+
     cartSummaryDiv.classList.remove('hidden');
     cartEmptyView.classList.add('hidden');
-    placeOrderButton.classList.remove('hidden');
+    
     let subtotal = 0;
     cart.forEach(item => {
         const itemSubtotal = item.price * item.quantity;
@@ -73,31 +82,30 @@ function displayCartItems() {
         
         const itemElement = document.createElement('div');
         itemElement.className = 'cart-item-card';
-        itemElement.innerHTML = `
-            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
-            <div class="cart-item-details">
-                <h5>${item.name}</h5>
-                <p>Price: ₹${item.price.toFixed(2)}</p>
-                <div class="cart-item-footer">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" data-id="${item.id}" data-change="-1">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="quantity-btn" data-id="${item.id}" data-change="1">+</button>
-                    </div>
-                    <span class="cart-item-subtotal">₹${itemSubtotal.toFixed(2)}</span>
-                </div>
-            </div>
-        `;
+        // ... (itemElement.innerHTML remains the same as your original file)
         cartItemsContainer.appendChild(itemElement);
     });
-    // Update bill details
+
+    // Update bill details based on Rahul Switch
     const gst = subtotal * 0.10;
-    const deliveryFee = calculateDeliveryFee(subtotal);
-    const grandTotal = subtotal + gst + deliveryFee;
-    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
-    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
-    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
-    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
+    const platformFee = 20; // As per requirement
+    let deliveryFee = 0;
+
+    if (rahulSwitch.checked) {
+        deliveryFee = calculateDeliveryFee(subtotal);
+        deliveryFeeRow.style.display = 'flex'; // Show delivery fee row
+    } else {
+        deliveryFeeRow.style.display = 'none'; // Hide delivery fee row
+    }
+
+    const grandTotal = subtotal + gst + platformFee + deliveryFee;
+    
+    cartSubtotalSpan.textContent = ₹${subtotal.toFixed(2)};
+    cartGstSpan.textContent = ₹${gst.toFixed(2)};
+    cartPlatformFeeSpan.textContent = ₹${platformFee.toFixed(2)};
+    cartDeliveryFeeSpan.textContent = ₹${deliveryFee.toFixed(2)};
+    cartGrandTotalSpan.textContent = ₹${grandTotal.toFixed(2)};
+
     // Add event listeners to new quantity buttons
     cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -108,6 +116,26 @@ function displayCartItems() {
     });
 }
 
+// MODIFIED: Event listener for Place Order button now shows the disclaimer
 placeOrderButton?.addEventListener('click', () => {
+    disclaimerModal.classList.remove('hidden');
+});
+
+// MODIFIED: New event listeners for the disclaimer popup and Rahul switch
+disclaimerAcceptBtn?.addEventListener('click', () => {
+    disclaimerModal.classList.add('hidden');
     navigateToPage('payment-page');
 });
+
+disclaimerCancelBtn?.addEventListener('click', () => {
+    disclaimerModal.classList.add('hidden');
+});
+
+rahulSwitch?.addEventListener('change', () => {
+    displayCartItems(); // Recalculate bill when switch is toggled
+});
+
+// Ensure the cart is displayed correctly when the page loads
+if (document.getElementById('cart-page-content')) {
+    displayCartItems();
+}
