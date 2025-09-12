@@ -176,3 +176,18 @@ moreMenuOverlay?.addEventListener('click', closeMoreMenu);
 // Initial auth check
 checkAuthState();
 });
+
+
+
+
+// Example modification for your js_main.js navigateToPage function:
+function navigateToPage(pageId, tabContentId = null) {
+    // ... your existing navigation logic ...
+
+    // Add this condition
+    if (pageId === 'payment-page') {
+        initializePaymentPage();
+    }
+}
+
+
