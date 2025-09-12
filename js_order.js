@@ -1,5 +1,4 @@
 // js_order.js
-
 const ordersListContainer = document.getElementById('orders-list');
 
 async function loadOrders() {
@@ -7,10 +6,8 @@ async function loadOrders() {
         ordersListContainer.innerHTML = '<p>Please log in to see your orders.</p>';
         return;
     }
-
     showLoader();
     ordersListContainer.innerHTML = ''; // Clear previous orders
-
     try {
         const { data: orders, error } = await supabase
             .from('orders')
@@ -33,11 +30,10 @@ async function loadOrders() {
         orders.forEach(order => {
             const orderCard = document.createElement('div');
             orderCard.className = 'order-card';
-
             const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
                 day: 'numeric', month: 'long', year: 'numeric'
             });
-            
+
             const itemsHtml = order.order_details.map(item => `
                 <div class="order-item-detail">
                     <span>${item.name} (x${item.quantity})</span>
@@ -45,6 +41,7 @@ async function loadOrders() {
                 </div>
             `).join('');
 
+            // Added OTP display section
             orderCard.innerHTML = `
                 <div class="order-card-header">
                     <h5>Order ID: ...${order.payment_token.slice(-8)}</h5>
@@ -53,6 +50,10 @@ async function loadOrders() {
                 <div class="order-card-body">
                     <p><strong>Date:</strong> ${orderDate}</p>
                     <p><strong>Total Amount:</strong> ₹${order.total_amount.toFixed(2)}</p>
+                    <div class="otp-container">
+                        <strong>Delivery OTP:</strong>
+                        <span class="otp-code">${order.otp || 'N/A'}</span>
+                    </div>
                     <hr>
                     <h6>Items:</h6>
                     ${itemsHtml}
@@ -60,7 +61,6 @@ async function loadOrders() {
             `;
             ordersListContainer.appendChild(orderCard);
         });
-
     } catch (error) {
         console.error('Error loading orders:', error);
         ordersListContainer.innerHTML = '<p class="message error">Could not load your orders. Please try again later.</p>';
