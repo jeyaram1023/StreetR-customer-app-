@@ -2,13 +2,12 @@
 
 const ordersListContainer = document.getElementById('orders-list');
 
-// MODIFIED: Event delegation for OTP form submission
+// Event delegation for OTP form submission
 ordersListContainer.addEventListener('submit', function(event) {
     if (event.target.classList.contains('otp-form')) {
         handleOtpSubmission(event);
     }
 });
-
 
 async function loadOrders() {
     if (!window.currentUser) {
@@ -29,7 +28,12 @@ async function loadOrders() {
         if (error) throw error;
 
         if (orders.length === 0) {
-            // ... (empty state HTML remains the same)
+            ordersListContainer.innerHTML = `
+                <div class="empty-state">
+                    <img src="https://uploads.onecompiler.io/42q5e2pr5/43nvveyp4/1000133809.png" alt="No Orders Illustration">
+                    <p>You haven't placed any orders yet.</p>
+                </div>
+            `;
             return;
         }
 
@@ -48,9 +52,8 @@ async function loadOrders() {
                 </div>
             `).join('');
 
-            // === NEW: OTP Form HTML logic ===
+            // OTP Form HTML logic
             let otpBlockHtml = '';
-            // Show OTP block only for active (paid) orders
             if (order.status === 'paid' && order.delivery_otp) {
                 otpBlockHtml = `
                     <div class="order-card-footer">
@@ -88,8 +91,7 @@ async function loadOrders() {
     }
 }
 
-
-// === NEW: Function to handle OTP submission ===
+// Function to handle OTP submission
 async function handleOtpSubmission(event) {
     event.preventDefault();
     showLoader();
@@ -100,7 +102,6 @@ async function handleOtpSubmission(event) {
     const userInputOtp = form.querySelector('.otp-input').value;
 
     if (userInputOtp === correctOtp) {
-        // OTP is correct, update the order status to 'delivered'
         const { error } = await supabase
             .from('orders')
             .update({ status: 'delivered' })
@@ -110,10 +111,9 @@ async function handleOtpSubmission(event) {
             alert('Error updating order status: ' + error.message);
         } else {
             alert('Order successfully marked as delivered!');
-            loadOrders(); // Refresh the orders list to reflect the change
+            loadOrders(); // Refresh the orders list
         }
     } else {
-        // OTP is incorrect
         alert('Incorrect OTP. Please try again.');
     }
     
