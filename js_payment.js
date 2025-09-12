@@ -20,7 +20,6 @@ async function initializePaymentPage() {
         const isDelivery = sessionStorage.getItem('isDelivery') === 'true';
 
         // 1. Generate the order_token from your backend
-        // We send the cart and delivery preference to the backend for secure price calculation.
         const { order_token } = await generateCashfreeToken(cart, isDelivery);
 
         // 2. Show the Cashfree Drop-in UI
@@ -28,8 +27,8 @@ async function initializePaymentPage() {
 
     } catch (error) {
         console.error("Error initiating payment:", error);
-        alert(Error: ${error.message});
-        navigateToPage('main-app-view', 'cart-page-content'); // Go back to cart on error
+        alert(`Error: ${error.message}`);
+        navigateToPage('main-app-view', 'cart-page-content');
     } finally {
         hideLoader();
     }
@@ -41,11 +40,11 @@ async function generateCashfreeToken(cart, isDelivery) {
         throw new Error("User not authenticated.");
     }
 
-    const response = await fetch(${SUPABASE_URL}/functions/v1/create-cashfree-order, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-cashfree-order`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': Bearer ${session.access_token},
+            'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ cart: cart, is_delivery: isDelivery }),
     });
@@ -67,7 +66,7 @@ function triggerCashfreeCheckout(orderToken, orderData) {
         onSuccess: (data) => handlePaymentSuccess(data.order, orderData),
         onFailure: (data) => {
             console.error("Payment failed:", data.order);
-            alert(Payment Failed: ${data.order.errorText});
+            alert(`Payment Failed: ${data.order.errorText}`);
         },
     });
 }
@@ -98,12 +97,12 @@ async function handlePaymentSuccess(order, orderData) {
         const deliveryFee = isDelivery ? calculateDeliveryFee(subtotal) : 0;
         const totalAmount = subtotal + platformFee + gst + deliveryFee;
 
-        const sellerAmount = subtotal; // Seller gets the item subtotal
-        const companyProfit = platformFee + gst; // Company gets platform fee and GST
+        const sellerAmount = subtotal; 
+        const companyProfit = platformFee + gst; 
 
-        const newOTP = generateOTP(); // Generate the unique OTP for this order
+        const newOTP = generateOTP(); 
 
-        // 3. Store order data in Supabase, including the new OTP
+        // 3. Store order data in Supabase
         const { error } = await supabase.from('orders').insert([{
             payment_token: order.paymentToken,
             user_id: window.currentUser.id,
@@ -116,7 +115,7 @@ async function handlePaymentSuccess(order, orderData) {
             company_profit: companyProfit,
             status: 'paid',
             order_details: cart,
-            otp: newOTP // Save the generated OTP
+            otp: newOTP 
         }]);
 
         if (error) {
@@ -124,19 +123,19 @@ async function handlePaymentSuccess(order, orderData) {
         }
 
         alert("Payment successful! Your order has been placed.");
-        localStorage.removeItem('streetrCart'); // Clear the cart
-        sessionStorage.removeItem('isDelivery'); // Clean up session storage
+        localStorage.removeItem('streetrCart'); 
+        sessionStorage.removeItem('isDelivery'); 
         navigateToPage('main-app-view', 'orders-page-content');
 
     } catch (error) {
         console.error("Error saving order:", error);
-        alert(An error occurred while saving your order: ${error.message});
+        alert(`An error occurred while saving your order: ${error.message}`);
     } finally {
         hideLoader();
     }
 }
 
-// Utility functions (should match js_add_to_cart.js)
+// Utility functions
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
 }
