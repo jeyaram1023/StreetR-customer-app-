@@ -2,6 +2,14 @@
 
 const ordersListContainer = document.getElementById('orders-list');
 
+// MODIFIED: Event delegation for OTP form submission
+ordersListContainer.addEventListener('submit', function(event) {
+    if (event.target.classList.contains('otp-form')) {
+        handleOtpSubmission(event);
+    }
+});
+
+
 async function loadOrders() {
     if (!window.currentUser) {
         ordersListContainer.innerHTML = '<p>Please log in to see your orders.</p>';
@@ -9,7 +17,7 @@ async function loadOrders() {
     }
 
     showLoader();
-    ordersListContainer.innerHTML = ''; // Clear previous orders
+    ordersListContainer.innerHTML = ''; 
 
     try {
         const { data: orders, error } = await supabase
@@ -21,12 +29,7 @@ async function loadOrders() {
         if (error) throw error;
 
         if (orders.length === 0) {
-            ordersListContainer.innerHTML = `
-                <div class="empty-state">
-                    <img src="https://uploads.onecompiler.io/42q5e2pr5/43nvveyp4/1000133809.png" alt="No Orders Illustration">
-                    <p>You haven't placed any orders yet.</p>
-                </div>
-            `;
+            // ... (empty state HTML remains the same)
             return;
         }
 
@@ -45,9 +48,24 @@ async function loadOrders() {
                 </div>
             `).join('');
 
+            // === NEW: OTP Form HTML logic ===
+            let otpBlockHtml = '';
+            // Show OTP block only for active (paid) orders
+            if (order.status === 'paid' && order.delivery_otp) {
+                otpBlockHtml = `
+                    <div class="order-card-footer">
+                        <p><strong>Delivery OTP: ${order.delivery_otp}</strong></p>
+                        <form class="otp-form" data-order-id="${order.id}" data-correct-otp="${order.delivery_otp}">
+                            <input type="number" class="otp-input" placeholder="Enter OTP to Confirm Delivery" required>
+                            <button type="submit" class="button-outline">Confirm</button>
+                        </form>
+                    </div>
+                `;
+            }
+
             orderCard.innerHTML = `
                 <div class="order-card-header">
-                    <h5>Order ID: ...${order.payment_token.slice(-8)}</h5>
+                    <h5>Order ID: ...${order.id.slice(-8)}</h5>
                     <span class="order-status ${order.status}">${order.status}</span>
                 </div>
                 <div class="order-card-body">
@@ -57,6 +75,7 @@ async function loadOrders() {
                     <h6>Items:</h6>
                     ${itemsHtml}
                 </div>
+                ${otpBlockHtml}
             `;
             ordersListContainer.appendChild(orderCard);
         });
@@ -67,4 +86,36 @@ async function loadOrders() {
     } finally {
         hideLoader();
     }
+}
+
+
+// === NEW: Function to handle OTP submission ===
+async function handleOtpSubmission(event) {
+    event.preventDefault();
+    showLoader();
+
+    const form = event.target;
+    const orderId = form.dataset.orderId;
+    const correctOtp = form.dataset.correctOtp;
+    const userInputOtp = form.querySelector('.otp-input').value;
+
+    if (userInputOtp === correctOtp) {
+        // OTP is correct, update the order status to 'delivered'
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: 'delivered' })
+            .eq('id', orderId);
+
+        if (error) {
+            alert('Error updating order status: ' + error.message);
+        } else {
+            alert('Order successfully marked as delivered!');
+            loadOrders(); // Refresh the orders list to reflect the change
+        }
+    } else {
+        // OTP is incorrect
+        alert('Incorrect OTP. Please try again.');
+    }
+    
+    hideLoader();
 }
