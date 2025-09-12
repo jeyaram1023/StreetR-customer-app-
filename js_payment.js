@@ -29,29 +29,29 @@ async function handlePaymentInitiation() {
         if (cart.length === 0) {
             throw new Error("Your cart is empty. Please add items before proceeding.");
         }
-
+        
+        const isDeliveryEnabled = JSON.parse(localStorage.getItem('isRahulSwitchOn')) || false;
         const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        const gst = subtotal * 0.10; // 10% GST as in your cart summary
-        const deliveryFee = calculateDeliveryFee(subtotal);
-        const totalAmount = subtotal + gst + deliveryFee;
+        const gst = subtotal * 0.10;
+        const platformFee = 20;
+        const deliveryFee = isDeliveryEnabled ? calculateDeliveryFee(subtotal) : 0;
+        const totalAmount = subtotal + gst + platformFee + deliveryFee;
 
-        // 1. Generate the order_token from our Supabase function
         const { order_token } = await generateCashfreeToken(totalAmount, cart);
         
-        // Hide the button and show the payment UI
         initiatePaymentButton.style.display = 'none';
 
-        // 2. Show the Cashfree Drop-in UI
         triggerCashfreeCheckout(order_token, {
             totalAmount,
             gst,
             deliveryFee,
+            platformFee,
             cart
         });
 
     } catch (error) {
         console.error("Error initiating payment:", error);
-        paymentMessage.textContent = `Error: ${error.message}`;
+        paymentMessage.textContent = Error: ${error.message};
         paymentMessage.className = 'message error';
         initiatePaymentButton.disabled = false;
         initiatePaymentButton.textContent = 'Proceed to Pay';
@@ -66,11 +66,11 @@ async function generateCashfreeToken(totalAmount, cart) {
         throw new Error("You must be logged in to place an order.");
     }
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-cashfree-order`, {
+    const response = await fetch(${SUPABASE_URL}/functions/v1/create-cashfree-order, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
+            'Authorization': Bearer ${session.access_token},
         },
         body: JSON.stringify({ total_amount: totalAmount, cart: cart }),
     });
@@ -92,8 +92,7 @@ function triggerCashfreeCheckout(orderToken, orderData) {
         onSuccess: (data) => handlePaymentSuccess(data.order, orderData),
         onFailure: (data) => {
             console.error("Payment failed:", data.order);
-            alert(`Payment Failed: ${data.order.errorText}`);
-            // Show the payment button again
+            alert(Payment Failed: ${data.order.errorText});
             const initiatePaymentButton = document.getElementById('initiate-payment-button');
             initiatePaymentButton.style.display = 'block';
             initiatePaymentButton.disabled = false;
@@ -105,17 +104,16 @@ function triggerCashfreeCheckout(orderToken, orderData) {
 async function handlePaymentSuccess(order, orderData) {
     showLoader();
     try {
-        const { cart, totalAmount, gst, deliveryFee } = orderData;
+        const { cart, totalAmount, gst, deliveryFee, platformFee } = orderData;
         const sellerId = cart.length > 0 ? cart[0].seller_id : null;
         if (!sellerId) {
             throw new Error("Critical error: Seller information is missing from the cart.");
         }
 
-        const platformFee = 5; // Example fixed platform fee
         const sellerAmount = totalAmount - platformFee - gst - deliveryFee;
         const companyProfit = platformFee;
+        const deliveryOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // 3. Store order data in Supabase
         const { error } = await supabase.from('orders').insert([{
             payment_token: order.paymentToken,
             user_id: window.currentUser.id,
@@ -126,8 +124,9 @@ async function handlePaymentSuccess(order, orderData) {
             delivery_fee: deliveryFee,
             seller_amount: sellerAmount,
             company_profit: companyProfit,
-            status: 'paid', // Or 'pending confirmation'
-            order_details: cart
+            status: 'paid', 
+            order_details: cart,
+            delivery_otp: deliveryOtp
         }]);
 
         if (error) {
@@ -135,19 +134,18 @@ async function handlePaymentSuccess(order, orderData) {
         }
 
         alert("Payment successful! Your order has been placed.");
-        localStorage.removeItem('streetrCart'); // Clear the cart
-        window.dispatchEvent(new CustomEvent('cartUpdated')); // Notify other parts of the app
+        localStorage.removeItem('streetrCart'); 
+        window.dispatchEvent(new CustomEvent('cartUpdated')); 
         navigateToPage('main-app-view', 'orders-page-content');
 
     } catch (error) {
         console.error("Error saving order:", error);
-        alert(`Your payment was successful, but we encountered an error while saving your order: ${error.message}. Please contact support.`);
+        alert(Your payment was successful, but we encountered an error while saving your order: ${error.message}. Please contact support.);
     } finally {
         hideLoader();
     }
 }
 
-// Utility functions (can be shared from a common file)
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
 }
