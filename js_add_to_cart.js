@@ -6,7 +6,8 @@ const cartSummaryDiv = document.getElementById('cart-summary');
 const cartEmptyView = document.getElementById('cart-empty-view');
 const placeOrderButton = document.getElementById('place-order-button');
 const disclaimerModal = document.getElementById('disclaimer-modal');
-const disclaimerOkButton = document.getElementById('disclaimer-ok-button');
+// FIX: corrected button ID
+const disclaimerOkButton = document.getElementById('disclaimer-accept-btn');
 
 // Bill details elements
 const cartSubtotalSpan = document.getElementById('cart-subtotal');
@@ -36,26 +37,36 @@ function saveCart(cart) {
 
 function addToCart(item) {
     let cart = getCart();
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
+    // FIX: == instead of === to avoid type mismatch
+    const existingItem = cart.find(cartItem => cartItem.id == item.id);
+
     if (existingItem) {
         existingItem.quantity++;
     } else {
         cart.push({ ...item, quantity: 1 });
     }
+
     saveCart(cart);
-    alert(${item.name} added to cart!);
+
+    // FIX: corrected string template
+    alert(`${item.name} added to cart!`);
+
+    // FIX: ensure UI updates
     displayCartItems();
 }
 
 function updateCartQuantity(itemId, change) {
     let cart = getCart();
-    const itemIndex = cart.findIndex(cartItem => cartItem.id === itemId);
+    // FIX: == instead of === to avoid type mismatch
+    const itemIndex = cart.findIndex(cartItem => cartItem.id == itemId);
+
     if (itemIndex > -1) {
         cart[itemIndex].quantity += change;
         if (cart[itemIndex].quantity <= 0) {
             cart.splice(itemIndex, 1);
         }
     }
+
     saveCart(cart);
     displayCartItems();
 }
@@ -92,11 +103,11 @@ function updateBillDetails() {
     }
 
     // Update the UI
-    cartSubtotalSpan.textContent = ₹${subtotal.toFixed(2)};
-    cartPlatformFeeSpan.textContent = ₹${PLATFORM_FEE.toFixed(2)};
-    cartGstSpan.textContent = ₹${gst.toFixed(2)};
-    cartDeliveryFeeSpan.textContent = ₹${deliveryFee.toFixed(2)};
-    cartGrandTotalSpan.textContent = ₹${grandTotal.toFixed(2)};
+    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+    cartPlatformFeeSpan.textContent = `₹${PLATFORM_FEE.toFixed(2)}`;
+    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
+    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
+    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
 }
 
 // --- DISPLAY LOGIC ---
@@ -157,7 +168,7 @@ placeOrderButton?.addEventListener('click', () => {
     disclaimerModal.classList.remove('hidden');
 });
 
-// Handle the "OK" button on the disclaimer to proceed to payment
+// Handle the "Accept & Proceed" button on the disclaimer to proceed to payment
 disclaimerOkButton?.addEventListener('click', () => {
     disclaimerModal.classList.add('hidden');
     // Store delivery preference for the payment page to access
