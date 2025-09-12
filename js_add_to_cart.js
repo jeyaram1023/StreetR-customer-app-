@@ -12,12 +12,11 @@ const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
 const cartGrandTotalSpan = document.getElementById('cart-grand-total');
 const deliveryFeeRow = document.getElementById('delivery-fee-row');
 
-// MODIFIED: New element selectors
+// New element selectors for modifications
 const rahulSwitch = document.getElementById('rahul-switch');
 const disclaimerModal = document.getElementById('disclaimer-modal');
 const disclaimerAcceptBtn = document.getElementById('disclaimer-accept-btn');
 const disclaimerCancelBtn = document.getElementById('disclaimer-cancel-btn');
-
 
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
@@ -62,7 +61,6 @@ function calculateDeliveryFee(subtotal) {
     return 30;
 }
 
-// MODIFIED: displayCartItems function is heavily updated for new logic
 function displayCartItems() {
     const cart = getCart();
     cartItemsContainer.innerHTML = '';
@@ -82,13 +80,27 @@ function displayCartItems() {
         
         const itemElement = document.createElement('div');
         itemElement.className = 'cart-item-card';
-        // ... (itemElement.innerHTML remains the same as your original file)
+        itemElement.innerHTML = `
+            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
+            <div class="cart-item-details">
+                <h5>${item.name}</h5>
+                <p>Price: ₹${item.price.toFixed(2)}</p>
+                <div class="cart-item-footer">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" data-id="${item.id}" data-change="-1">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn" data-id="${item.id}" data-change="1">+</button>
+                    </div>
+                    <span class="cart-item-subtotal">₹${itemSubtotal.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
         cartItemsContainer.appendChild(itemElement);
     });
 
     // Update bill details based on Rahul Switch
     const gst = subtotal * 0.10;
-    const platformFee = 20; // As per requirement
+    const platformFee = 20;
     let deliveryFee = 0;
 
     if (rahulSwitch.checked) {
@@ -106,7 +118,6 @@ function displayCartItems() {
     cartDeliveryFeeSpan.textContent = ₹${deliveryFee.toFixed(2)};
     cartGrandTotalSpan.textContent = ₹${grandTotal.toFixed(2)};
 
-    // Add event listeners to new quantity buttons
     cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const itemId = btn.dataset.id;
@@ -116,12 +127,12 @@ function displayCartItems() {
     });
 }
 
-// MODIFIED: Event listener for Place Order button now shows the disclaimer
+// Event listener for Place Order button now shows the disclaimer
 placeOrderButton?.addEventListener('click', () => {
     disclaimerModal.classList.remove('hidden');
 });
 
-// MODIFIED: New event listeners for the disclaimer popup and Rahul switch
+// Event listeners for the disclaimer popup and Rahul switch
 disclaimerAcceptBtn?.addEventListener('click', () => {
     disclaimerModal.classList.add('hidden');
     navigateToPage('payment-page');
@@ -135,7 +146,7 @@ rahulSwitch?.addEventListener('change', () => {
     displayCartItems(); // Recalculate bill when switch is toggled
 });
 
-// Ensure the cart is displayed correctly when the page loads
+// Initial call to set up the cart page correctly
 if (document.getElementById('cart-page-content')) {
     displayCartItems();
 }
