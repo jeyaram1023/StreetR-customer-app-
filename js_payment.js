@@ -1,153 +1,49 @@
-// js_payment.js
-
-document.addEventListener('DOMContentLoaded', () => {
-    const initiatePaymentButton = document.getElementById('initiate-payment-button');
-    const backToCartButton = document.getElementById('back-to-cart-button');
-    
-    if (initiatePaymentButton) {
-        initiatePaymentButton.addEventListener('click', handlePaymentInitiation);
-    }
-    
-    if (backToCartButton) {
-        backToCartButton.addEventListener('click', () => {
-             navigateToPage('main-app-view', 'cart-page-content');
-        });
-    }
-});
-
-async function handlePaymentInitiation() {
-    const initiatePaymentButton = document.getElementById('initiate-payment-button');
-    const paymentMessage = document.getElementById('payment-message');
-    
-    initiatePaymentButton.disabled = true;
-    initiatePaymentButton.textContent = 'Initializing...';
-    paymentMessage.textContent = '';
-    showLoader();
-
-    try {
-        const cart = getCart();
-        if (cart.length === 0) {
-            throw new Error("Your cart is empty. Please add items before proceeding.");
-        }
-        
-        const isDeliveryEnabled = JSON.parse(localStorage.getItem('isRahulSwitchOn')) || false;
-        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        const gst = subtotal * 0.10;
-        const platformFee = 20;
-        const deliveryFee = isDeliveryEnabled ? calculateDeliveryFee(subtotal) : 0;
-        const totalAmount = subtotal + gst + platformFee + deliveryFee;
-
-        const { order_token } = await generateCashfreeToken(totalAmount, cart);
-        
-        initiatePaymentButton.style.display = 'none';
-
-        triggerCashfreeCheckout(order_token, {
-            totalAmount,
-            gst,
-            deliveryFee,
-            platformFee,
-            cart
-        });
-
-    } catch (error) {
-        console.error("Error initiating payment:", error);
-        paymentMessage.textContent = Error: ${error.message};
-        paymentMessage.className = 'message error';
-        initiatePaymentButton.disabled = false;
-        initiatePaymentButton.textContent = 'Proceed to Pay';
-    } finally {
-        hideLoader();
-    }
-}
-
-async function generateCashfreeToken(totalAmount, cart) {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session) {
-        throw new Error("You must be logged in to place an order.");
-    }
-
-    const response = await fetch(${SUPABASE_URL}/functions/v1/create-cashfree-order, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': Bearer ${session.access_token},
-        },
-        body: JSON.stringify({ total_amount: totalAmount, cart: cart }),
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate payment session.');
-    }
-    return await response.json();
-}
-
-function triggerCashfreeCheckout(orderToken, orderData) {
-    const cashfree = new Cashfree({
-        mode: "sandbox" // Use "production" for live payments
-    });
-    
-    cashfree.drop(document.getElementById("payment-form-container"), {
-        orderToken: orderToken,
-        onSuccess: (data) => handlePaymentSuccess(data.order, orderData),
-        onFailure: (data) => {
-            console.error("Payment failed:", data.order);
-            alert(Payment Failed: ${data.order.errorText});
-            const initiatePaymentButton = document.getElementById('initiate-payment-button');
-            initiatePaymentButton.style.display = 'block';
-            initiatePaymentButton.disabled = false;
-            initiatePaymentButton.textContent = 'Try Again';
-        },
-    });
-}
-
-async function handlePaymentSuccess(order, orderData) {
-    showLoader();
-    try {
-        const { cart, totalAmount, gst, deliveryFee, platformFee } = orderData;
-        const sellerId = cart.length > 0 ? cart[0].seller_id : null;
-        if (!sellerId) {
-            throw new Error("Critical error: Seller information is missing from the cart.");
-        }
-
-        const sellerAmount = totalAmount - platformFee - gst - deliveryFee;
-        const companyProfit = platformFee;
-        const deliveryOtp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        const { error } = await supabase.from('orders').insert([{
-            payment_token: order.paymentToken,
-            user_id: window.currentUser.id,
-            seller_id: sellerId,
-            total_amount: totalAmount,
-            platform_fee: platformFee,
-            gst: gst,
-            delivery_fee: deliveryFee,
-            seller_amount: sellerAmount,
-            company_profit: companyProfit,
-            status: 'paid', 
-            order_details: cart,
-            delivery_otp: deliveryOtp
-        }]);
-
-        if (error) {
-            throw error;
-        }
-
-        alert("Payment successful! Your order has been placed.");
-        localStorage.removeItem('streetrCart'); 
-        window.dispatchEvent(new CustomEvent('cartUpdated')); 
-        navigateToPage('main-app-view', 'orders-page-content');
-
-    } catch (error) {
-        console.error("Error saving order:", error);
-        alert(Your payment was successful, but we encountered an error while saving your order: ${error.message}. Please contact support.);
-    } finally {
-        hideLoader();
-    }
-}
+// js_add_to_cart.js
+const cartItemsContainer = document.getElementById('cart-items-container');
+const cartSummaryDiv = document.getElementById('cart-summary');
+const cartEmptyView = document.getElementById('cart-empty-view');
+// Bill details spans
+const cartSubtotalSpan = document.getElementById('cart-subtotal');
+const cartGstSpan = document.getElementById('cart-gst');
+const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
+const cartGrandTotalSpan = document.getElementById('cart-grand-total');
+const placeOrderButton = document.getElementById('place-order-button');
 
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
+}
+
+function saveCart(cart) {
+    localStorage.setItem('streetrCart', JSON.stringify(cart));
+    // Post a custom event that the cart has been updated
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+}
+
+function addToCart(item) {
+    let cart = getCart();
+    const existingItem = cart.find(cartItem => cartItem.id === item.id);
+    if (existingItem) {
+        existingItem.quantity++;
+    } else {
+        cart.push({ ...item, quantity: 1 });
+    }
+    saveCart(cart);
+    // Simple feedback, can be replaced with a less intrusive toast notification
+    alert(`${item.name} added to cart!`);
+    displayCartItems();
+}
+
+function updateCartQuantity(itemId, change) {
+    let cart = getCart();
+    const itemIndex = cart.findIndex(cartItem => cartItem.id === itemId);
+    if (itemIndex > -1) {
+        cart[itemIndex].quantity += change;
+        if (cart[itemIndex].quantity <= 0) {
+            cart.splice(itemIndex, 1);
+        }
+    }
+    saveCart(cart);
+    displayCartItems();
 }
 
 function calculateDeliveryFee(subtotal) {
@@ -157,3 +53,61 @@ function calculateDeliveryFee(subtotal) {
     if (subtotal <= 1000) return 25;
     return 30;
 }
+
+function displayCartItems() {
+    const cart = getCart();
+    cartItemsContainer.innerHTML = '';
+    if (cart.length === 0) {
+        cartSummaryDiv.classList.add('hidden');
+        cartEmptyView.classList.remove('hidden');
+        placeOrderButton.classList.add('hidden');
+        return;
+    }
+    cartSummaryDiv.classList.remove('hidden');
+    cartEmptyView.classList.add('hidden');
+    placeOrderButton.classList.remove('hidden');
+    let subtotal = 0;
+    cart.forEach(item => {
+        const itemSubtotal = item.price * item.quantity;
+        subtotal += itemSubtotal;
+        
+        const itemElement = document.createElement('div');
+        itemElement.className = 'cart-item-card';
+        itemElement.innerHTML = `
+            <img src="${item.image_url || 'assets/placeholder-food.png'}" alt="${item.name}">
+            <div class="cart-item-details">
+                <h5>${item.name}</h5>
+                <p>Price: ₹${item.price.toFixed(2)}</p>
+                <div class="cart-item-footer">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" data-id="${item.id}" data-change="-1">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn" data-id="${item.id}" data-change="1">+</button>
+                    </div>
+                    <span class="cart-item-subtotal">₹${itemSubtotal.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+        cartItemsContainer.appendChild(itemElement);
+    });
+    // Update bill details
+    const gst = subtotal * 0.10;
+    const deliveryFee = calculateDeliveryFee(subtotal);
+    const grandTotal = subtotal + gst + deliveryFee;
+    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
+    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
+    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
+    // Add event listeners to new quantity buttons
+    cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const itemId = btn.dataset.id;
+            const change = parseInt(btn.dataset.change);
+            updateCartQuantity(itemId, change);
+        });
+    });
+}
+
+placeOrderButton?.addEventListener('click', () => {
+    navigateToPage('payment-page');
+});
