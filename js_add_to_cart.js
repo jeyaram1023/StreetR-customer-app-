@@ -1,77 +1,53 @@
 // js_add_to_cart.js
-
-// --- DOM ELEMENTS ---
 const cartItemsContainer = document.getElementById('cart-items-container');
 const cartSummaryDiv = document.getElementById('cart-summary');
 const cartEmptyView = document.getElementById('cart-empty-view');
-const placeOrderButton = document.getElementById('place-order-button');
-const disclaimerModal = document.getElementById('disclaimer-modal');
-// FIX: corrected button ID
-const disclaimerOkButton = document.getElementById('disclaimer-accept-btn');
 
-// Bill details elements
+// Bill details spans
 const cartSubtotalSpan = document.getElementById('cart-subtotal');
-const cartPlatformFeeSpan = document.getElementById('cart-platform-fee');
 const cartGstSpan = document.getElementById('cart-gst');
 const cartDeliveryFeeSpan = document.getElementById('cart-delivery-fee');
 const cartGrandTotalSpan = document.getElementById('cart-grand-total');
 
-// New delivery switch and bill rows
-const doorDeliverySwitch = document.getElementById('door-delivery-switch');
-const gstRow = document.getElementById('gst-row');
-const deliveryRow = document.getElementById('delivery-row');
+const placeOrderButton = document.getElementById('place-order-button');
 
-// --- CONSTANTS ---
-const PLATFORM_FEE = 5.00; // Platform charge of ₹5
-const GST_RATE = 0.10; // 10% GST
-
-// --- CART LOGIC ---
 function getCart() {
     return JSON.parse(localStorage.getItem('streetrCart')) || [];
 }
 
 function saveCart(cart) {
     localStorage.setItem('streetrCart', JSON.stringify(cart));
+    // Post a custom event that the cart has been updated
     window.dispatchEvent(new CustomEvent('cartUpdated'));
 }
 
 function addToCart(item) {
     let cart = getCart();
-    // FIX: == instead of === to avoid type mismatch
-    const existingItem = cart.find(cartItem => cartItem.id == item.id);
-
+    const existingItem = cart.find(cartItem => cartItem.id === item.id);
     if (existingItem) {
         existingItem.quantity++;
     } else {
         cart.push({ ...item, quantity: 1 });
     }
-
     saveCart(cart);
-
-    // FIX: corrected string template
+    // Simple feedback, can be replaced with a less intrusive toast notification
     alert(`${item.name} added to cart!`);
-
-    // FIX: ensure UI updates
     displayCartItems();
 }
 
 function updateCartQuantity(itemId, change) {
     let cart = getCart();
-    // FIX: == instead of === to avoid type mismatch
-    const itemIndex = cart.findIndex(cartItem => cartItem.id == itemId);
-
+    const itemIndex = cart.findIndex(cartItem => cartItem.id === itemId);
     if (itemIndex > -1) {
         cart[itemIndex].quantity += change;
         if (cart[itemIndex].quantity <= 0) {
             cart.splice(itemIndex, 1);
         }
     }
-
     saveCart(cart);
     displayCartItems();
 }
 
-// --- BILL CALCULATION ---
 function calculateDeliveryFee(subtotal) {
     if (subtotal <= 100) return 10;
     if (subtotal <= 200) return 15;
@@ -80,37 +56,6 @@ function calculateDeliveryFee(subtotal) {
     return 30;
 }
 
-function updateBillDetails() {
-    const cart = getCart();
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const isDelivery = doorDeliverySwitch.checked;
-
-    let gst = 0;
-    let deliveryFee = 0;
-    let grandTotal = subtotal + PLATFORM_FEE;
-
-    // Display charges based on the switch
-    if (isDelivery) {
-        gst = subtotal * GST_RATE;
-        deliveryFee = calculateDeliveryFee(subtotal);
-        grandTotal += gst + deliveryFee;
-
-        gstRow.classList.remove('hidden');
-        deliveryRow.classList.remove('hidden');
-    } else {
-        gstRow.classList.add('hidden');
-        deliveryRow.classList.add('hidden');
-    }
-
-    // Update the UI
-    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
-    cartPlatformFeeSpan.textContent = `₹${PLATFORM_FEE.toFixed(2)}`;
-    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
-    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
-    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
-}
-
-// --- DISPLAY LOGIC ---
 function displayCartItems() {
     const cart = getCart();
     cartItemsContainer.innerHTML = '';
@@ -118,14 +63,19 @@ function displayCartItems() {
     if (cart.length === 0) {
         cartSummaryDiv.classList.add('hidden');
         cartEmptyView.classList.remove('hidden');
+        placeOrderButton.classList.add('hidden');
         return;
     }
 
     cartSummaryDiv.classList.remove('hidden');
     cartEmptyView.classList.add('hidden');
+    placeOrderButton.classList.remove('hidden');
 
+    let subtotal = 0;
     cart.forEach(item => {
         const itemSubtotal = item.price * item.quantity;
+        subtotal += itemSubtotal;
+        
         const itemElement = document.createElement('div');
         itemElement.className = 'cart-item-card';
         itemElement.innerHTML = `
@@ -146,6 +96,16 @@ function displayCartItems() {
         cartItemsContainer.appendChild(itemElement);
     });
 
+    // Update bill details
+    const gst = subtotal * 0.10;
+    const deliveryFee = calculateDeliveryFee(subtotal);
+    const grandTotal = subtotal + gst + deliveryFee;
+
+    cartSubtotalSpan.textContent = `₹${subtotal.toFixed(2)}`;
+    cartGstSpan.textContent = `₹${gst.toFixed(2)}`;
+    cartDeliveryFeeSpan.textContent = `₹${deliveryFee.toFixed(2)}`;
+    cartGrandTotalSpan.textContent = `₹${grandTotal.toFixed(2)}`;
+
     // Add event listeners to new quantity buttons
     cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -154,24 +114,8 @@ function displayCartItems() {
             updateCartQuantity(itemId, change);
         });
     });
-
-    // Initial bill calculation
-    updateBillDetails();
 }
 
-// --- EVENT LISTENERS ---
-// Listen for changes on the delivery switch
-doorDeliverySwitch?.addEventListener('change', updateBillDetails);
-
-// Handle the "Place Order" button click to show the disclaimer
 placeOrderButton?.addEventListener('click', () => {
-    disclaimerModal.classList.remove('hidden');
-});
-
-// Handle the "Accept & Proceed" button on the disclaimer to proceed to payment
-disclaimerOkButton?.addEventListener('click', () => {
-    disclaimerModal.classList.add('hidden');
-    // Store delivery preference for the payment page to access
-    sessionStorage.setItem('isDelivery', doorDeliverySwitch.checked);
     navigateToPage('payment-page');
 });
